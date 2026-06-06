@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>TimeCode-Rechner</title>
+  <link href="css/bootstrap_5_3_8.min.css" rel="stylesheet">
+
+<script>
+
+"use strict";
+
+
+// Danny Schreiter
+// 05/2026
+
+let FramesPerSecond = 25;
+let max_hours = 24;
+
+
+window.onload = function() {
+
+	document.querySelectorAll('input.summand').forEach(input => {
+		init_TC_input(input);
+	});
+	
+	document.querySelectorAll('input.summe').forEach(output => {
+		init_TC_output(output);
+	});	
+	
+	document.querySelectorAll('input[name="FPS_btnradio"]').forEach(radio => {					// FPS-Buttons registrieren
+		radio.addEventListener('change', (event) => {
+			//console.log("Ausgewählter Wert:", event.target.value);
+			FramesPerSecond = event.target.value;
+			
+			document.querySelectorAll('input.summand').forEach(input => {		parseTC(input);			});
+			document.querySelectorAll('div.input-group').forEach(inputrow => {	calculate(inputrow);	});			
+		});
+	});
+	
+	document.querySelectorAll('input[name="h_btnradio"]').forEach(radio => {					// FPS-Buttons registrieren
+		radio.addEventListener('change', (event) => {
+			//console.log("Ausgewählter Wert:", event.target.value);
+			max_hours = event.target.value;
+			
+			document.querySelectorAll('input.summand').forEach(input => {		parseTC(input);			});
+			document.querySelectorAll('div.input-group').forEach(inputrow => {	calculate(inputrow);	});			
+		});
+	});	
+	
+	document.querySelector('input.summand').focus();
+}
+
+
+function init_TC_input(Input_Object) {
+	
+	Input_Object.value = "00:00:00:00";
+	
+	// auf Tastendruck im Input-Feld lauschen
+	Input_Object.addEventListener('keydown', (event) => {
+
+		if (event.key === '+') {
+			event.preventDefault(); // Verhindert, dass das "+" tatsächlich im Textfeld hineingeschrieben wird
+			Input_Object.parentElement.querySelector('.operator').innerText = "+";
+			calculate(Input_Object.parentElement);
+			if(Input_Object.parentElement.querySelector('.summand') === Input_Object)
+			{
+				Input_Object.parentElement.querySelectorAll(':scope > .summand')[1].focus();	
+			}
+		}
+
+		if (event.key === '-') {
+			event.preventDefault(); 
+			Input_Object.parentElement.querySelector('.operator').innerText = "-";
+			calculate(Input_Object.parentElement);
+			if(Input_Object.parentElement.querySelector('.summand') === Input_Object)
+			{
+				Input_Object.parentElement.querySelectorAll(':scope > .summand')[1].focus();	
+			}
+		}	
+
+		if (event.key === 'n' || event.key === 'N') {				// Feld nullen
+			event.preventDefault(); 
+			const CursorPos = Input_Object.selectionStart;
+			Input_Object.value = "00:00:00:00";
+			parseTC(Input_Object);
+			calculate(Input_Object.parentElement);
+			Input_Object.setSelectionRange(CursorPos, CursorPos);
+		}
+		
+		if (event.key === 'z' || event.key === 'Z') {				// neue Zeile
+			event.preventDefault(); 
+			mehr_Zeilen();
+			return true;
+		}		
+
+		if (event.key === 'ArrowUp') {
+			event.preventDefault(); 
+			const aktuellesInput = event.target; 
+			const geschwisterListe = aktuellesInput.parentElement.querySelectorAll(':scope > input.summand');
+			const index = Array.from(geschwisterListe).indexOf(aktuellesInput);
+			const prevZeile = Input_Object.closest(".zeile").previousElementSibling.querySelectorAll('.summand')[index];
+			if(!prevZeile)
+				return;
+			prevZeile.focus();
+			prevZeile.setSelectionRange(0, 0);
+		}
+
+		if (event.key === 'ArrowDown') {
+			event.preventDefault(); 
+			const aktuellesInput = event.target; 
+			const geschwisterListe = aktuellesInput.parentElement.querySelectorAll(':scope > input.summand');
+			const index = Array.from(geschwisterListe).indexOf(aktuellesInput);			
+			try {
+				const nextZeile = Input_Object.closest(".zeile").nextElementSibling.querySelectorAll('.summand')[index];			
+				nextZeile.focus();
+				nextZeile.setSelectionRange(0, 0);	
+			}
+				catch { return; }			
+		}	
+
+		if (event.key === 'ArrowRight') {
+			const aktuellesInput = event.target; 
+			const CursorPos = aktuellesInput.selectionStart == aktuellesInput.selectionEnd ? aktuellesInput.selectionStart : -1;
+			if(CursorPos != 11)
+				return;
+			const geschwisterListe = aktuellesInput.parentElement.querySelectorAll(':scope > input.summand');
+			const index = Array.from(geschwisterListe).indexOf(aktuellesInput);
+			if(index != 0)
+				return;			
+	
+			event.preventDefault(); 
+
+			const nextFeld = geschwisterListe[1];
+			if(!nextFeld)
+				return;
+			nextFeld.focus();
+			nextFeld.setSelectionRange(0, 0);	
+		}	
+
+		if (event.key === 'ArrowLeft') {
+			const aktuellesInput = event.target; 
+			const CursorPos = aktuellesInput.selectionStart == aktuellesInput.selectionEnd ? aktuellesInput.selectionStart : -1;
+			if(CursorPos != 0)
+				return;
+			const geschwisterListe = aktuellesInput.parentElement.querySelectorAll(':scope > input.summand');
+			const index = Array.from(geschwisterListe).indexOf(aktuellesInput);
+			if(index != 1)
+				return;			
+			event.preventDefault(); 
+
+			const prevFeld = geschwisterListe[0];
+			if(!prevFeld)
+				return;
+			prevFeld.focus();
+			prevFeld.setSelectionRange(11, 11);	
+		}			
+		
+		//console.log(event.key);		
+	});	
+	
+
+	Input_Object.addEventListener("wheel", (event) => {
+	  //event.preventDefault();
+	  if(event.target.classList.contains("is-invalid"))
+		return;
+	  Mausrad(event.target, event.deltaY);
+	}, { passive: false });
+
+	
+	Input_Object.addEventListener("input", (event) => {
+		parseTC(event.target);
+		calculate(event.target.closest("div.input-group"));
+	});
+	
+	// Start Drag
+	Input_Object.addEventListener("dragstart", (e) => {
+	  e.dataTransfer.setData("text/plain", Input_Object.value);
+	});
+
+	// Drop erlauben
+	Input_Object.addEventListener("dragover", (e) => {
+	  e.preventDefault();
+	});
+
+	// Wert übernehmen
+	Input_Object.addEventListener("drop", (e) => {
+		e.preventDefault();
+		const data = e.dataTransfer.getData("text/plain");
+		Input_Object.value = data;
+		parseTC(Input_Object);
+		calculate(Input_Object.closest("div.input-group"));
+	});	
+	
+}
+
+
+function init_TC_output(Output_Object) {
+	
+	Output_Object.value = "00:00:00:00";
+
+	// Start Drag
+	Output_Object.addEventListener("dragstart", (e) => {
+	  e.dataTransfer.setData("text/plain", Output_Object.value);
+	});
+	
+	Output_Object.addEventListener('focus', () => {
+		Output_Object.select();
+	});	
+}
+
+
+function calculate(InputGroup) {
+	const Ergebnisfeld = InputGroup.querySelector('.summe');
+	const Operator = InputGroup.querySelector('.operator').innerText;
+	let ErgebnisFrames = 0;
+	
+	// Gibt es ungültige Felder?
+	if(InputGroup.querySelector('.is-invalid') !== null)
+	{
+		Ergebnisfeld.value = "";
+		return false;
+	}
+	
+	const alleDirektenKinder = InputGroup.querySelectorAll(':scope > .summand');
+	const Argument1 = alleDirektenKinder[0];
+	const Argument2 = alleDirektenKinder[1];
+
+	if(Operator == "-")
+		ErgebnisFrames = TC_to_Frames(Argument1.value) - TC_to_Frames(Argument2.value);
+	else
+		ErgebnisFrames = TC_to_Frames(Argument1.value) + TC_to_Frames(Argument2.value);	
+		
+	if(max_hours == 24 && ErgebnisFrames >= TC_to_Frames("24:00:00:00"))
+	{
+		document.getElementById("h_btngroup").style.display = "";
+		ErgebnisFrames = ErgebnisFrames % TC_to_Frames("24:00:00:00");
+	}
+
+	if(max_hours == 24 && ErgebnisFrames < 0)
+	{
+		document.getElementById("h_btngroup").style.display = "";
+		ErgebnisFrames = TC_to_Frames("24:00:00:00") - (Math.abs(ErgebnisFrames) % TC_to_Frames("24:00:00:00"));		
+	}
+	
+
+	Ergebnisfeld.value = Frames_to_TC(ErgebnisFrames);
+	
+	return true;
+}
+
+
+function TC_to_Frames(TC) {
+	const Stunden = Number(TC.trim().substring(0, 2));
+	const Minuten = Number(TC.trim().substring(3, 5));
+	const Sekunden = Number(TC.trim().substring(6, 8));
+	const Frames = Number(TC.trim().substring(9, 11));
+	
+	return FramesPerSecond * Stunden * 3600 + FramesPerSecond * Minuten * 60 + FramesPerSecond * Sekunden + Frames;
+}
+
+
+function Frames_to_TC(FramesGes) {
+	let Vorzeichen = "";
+	if(FramesGes < 0)
+	{
+		FramesGes = Math.abs(FramesGes);
+		Vorzeichen = "-";
+	}
+	const Frames = FramesGes % FramesPerSecond;
+	let Rest = Math.trunc(FramesGes / FramesPerSecond);
+	const Sekunden = Rest % 60;
+	Rest = Math.trunc(Rest / 60);
+	const Minuten = Rest % 60;
+	const Stunden = Math.trunc(Rest / 60);	
+	
+	
+	return Vorzeichen + Stunden.toString().padStart(2, '0') + ":" + Minuten.toString().padStart(2, '0') + ":" + Sekunden.toString().padStart(2, '0') + ":" + Frames.toString().padStart(2, '0');
+}
+
+
+
+function parseTC(Input) {
+	Input.classList.remove("is-invalid");
+	let gueltiger_TC = /0/;
+	
+	const CursorPos = Input.selectionStart == Input.selectionEnd ? Input.selectionStart : -1;
+	//console.log("Cursor: ", CursorPos);
+	
+	if(max_hours == 24)
+	{
+		if(FramesPerSecond == 25)
+			gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-4]))$/;			// 25 Frames
+		else
+			gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:[0-4]\d$/;						// 50 Frames		
+	} else {
+		if(FramesPerSecond == 25)
+			gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-4]))$/;			// 25 Frames
+		else
+			gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:[0-4]\d$/;						// 50 Frames	
+	}
+
+
+	const nurZahlen = Input.value.trim().replace(/\D/g, "");
+	
+	if(nurZahlen.length == 8)
+	{
+		const mitDoppelpunkt = eight2TC(nurZahlen);
+		if(gueltiger_TC.test(mitDoppelpunkt))
+		{
+			Input.value = mitDoppelpunkt;
+			Input.setSelectionRange(CursorPos, CursorPos);
+			return true;
+		}	
+	}
+	
+	
+
+
+	// Fall +_4:44:44:44 : Ziffer am Anfang eingefügt  ---> überschreiben
+	
+	const Regex03 = /^\d{3}:\d{2}:\d{2}:\d{2}$/;	
+	if(Regex03.test(Input.value.trim()) && CursorPos == 1)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 1) + nurZahlen.substring(2, 9));	
+			Input.setSelectionRange(1, 1);			
+			return parseTC(Input);
+	}	
+	
+	// weitere Einfüge-Fälle
+		
+	if(Regex03.test(Input.value.trim()) && CursorPos == 2)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 2) + nurZahlen.substring(3, 9));	
+			Input.setSelectionRange(3, 3);			
+			return parseTC(Input);
+	}	
+	
+	if(Regex03.test(Input.value.trim()) && CursorPos == 3)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 3) + nurZahlen.substring(4, 9));	
+			Input.setSelectionRange(4, 4);			
+			return parseTC(Input);
+	}		
+
+	const Regex04 = /^\d{2}:\d{3}:\d{2}:\d{2}$/;	
+	if(Regex04.test(Input.value.trim()) && CursorPos == 4)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 3) + nurZahlen.substring(4, 9));	
+			Input.setSelectionRange(4, 4);			
+			return parseTC(Input);
+	}		
+		
+	if(Regex04.test(Input.value.trim()) && CursorPos == 5)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 4) + nurZahlen.substring(5, 9));	
+			Input.setSelectionRange(6, 6);			
+			return parseTC(Input);
+	}	
+
+	if(Regex04.test(Input.value.trim()) && CursorPos == 6)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 5) + nurZahlen.substring(6, 9));	
+			Input.setSelectionRange(7, 7);			
+			return parseTC(Input);
+	}		
+
+	const Regex05 = /^\d{2}:\d{2}:\d{3}:\d{2}$/;	
+	if(Regex05.test(Input.value.trim()) && CursorPos == 7)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 5) + nurZahlen.substring(6, 9));	
+			Input.setSelectionRange(7, 7);			
+			return parseTC(Input);
+	}		
+		
+	if(Regex05.test(Input.value.trim()) && CursorPos == 8)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 6) + nurZahlen.substring(7, 9));	
+			Input.setSelectionRange(9, 9);			
+			return parseTC(Input);
+	}	
+			
+	if(Regex05.test(Input.value.trim()) && CursorPos == 9)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 7) + nurZahlen.substring(8, 9));	
+			Input.setSelectionRange(10, 10);			
+			return parseTC(Input);
+	}		
+			
+	const Regex06 = /^\d{2}:\d{2}:\d{2}:\d{3}$/;	
+	if(Regex06.test(Input.value.trim()) && CursorPos == 10)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 7) + nurZahlen.substring(8, 9));	
+			Input.setSelectionRange(10, 10);			
+			return parseTC(Input);
+	}		
+		
+	if(Regex06.test(Input.value.trim()) && CursorPos == 11)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 8) + nurZahlen.substring(9, 9));	
+			Input.setSelectionRange(11, 11);			
+			return parseTC(Input);
+	}		
+
+
+	// Sonderfall: 44:44:44:44+ Ziffer am Ende eingegeben? ---> alle Ziffern eins nach links verschieben.
+	
+	if(Regex06.test(Input.value.trim()) && CursorPos == 12)
+	{
+			Input.value = eight2TC(nurZahlen.substring(1, 9));					
+			return parseTC(Input);
+	}
+
+
+
+
+
+
+	// Fall _4:44:44:44 : Ziffer am Anfang gelöscht ---> nullen
+	
+	const Regex07 = /^\d{1}:\d{2}:\d{2}:\d{2}$/;	
+	if(Regex07.test(Input.value.trim()) && CursorPos == 0)
+	{
+			Input.value = eight2TC("0" + nurZahlen);	
+			Input.setSelectionRange(0, 0);			
+			return parseTC(Input);
+	}	
+	
+	// weitere Lösch-Fälle
+		
+	if(Regex07.test(Input.value.trim()) && CursorPos == 1)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 1) + "0" + nurZahlen.substring(1, 7));	
+			Input.setSelectionRange(1, 1);			
+			return parseTC(Input);
+	}	
+
+	const Regex08 = /^\d{2}:\d{1}:\d{2}:\d{2}$/;	
+	if(Regex08.test(Input.value.trim()) && CursorPos == 3)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 2) + "0" + nurZahlen.substring(2, 7));	
+			Input.setSelectionRange(3, 3);			
+			return parseTC(Input);
+	}		
+		
+	if(Regex08.test(Input.value.trim()) && CursorPos == 4)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 3) + "0" + nurZahlen.substring(3, 7));	
+			Input.setSelectionRange(4, 4);			
+			return parseTC(Input);
+	}	
+
+	const Regex09 = /^\d{2}:\d{2}:\d{1}:\d{2}$/;	
+	if(Regex09.test(Input.value.trim()) && CursorPos == 6)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 4) + "0" + nurZahlen.substring(4, 7));	
+			Input.setSelectionRange(6, 6);			
+			return parseTC(Input);
+	}		
+		
+	if(Regex09.test(Input.value.trim()) && CursorPos == 7)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 5) + "0" + nurZahlen.substring(5, 7));	
+			Input.setSelectionRange(7, 7);			
+			return parseTC(Input);
+	}	
+
+	const Regex10 = /^\d{2}:\d{2}:\d{2}:\d{1}$/;	
+	if(Regex10.test(Input.value.trim()) && CursorPos == 9)
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 6) + "0" + nurZahlen.substring(6, 7));	
+			Input.setSelectionRange(9, 9);			
+			return parseTC(Input);
+	}		
+	
+
+	// Sonderfall: 44:44:44:4_ Ziffer am Ende gelöscht ---> alle Ziffern eins nach rechts verschieben.
+
+	if(Regex10.test(Input.value.trim()) && CursorPos == 10)
+	{
+			Input.value = eight2TC("0" + nurZahlen);		
+			return parseTC(Input);
+	}
+	
+	
+
+	
+	// Sonderfall: TC am Anfang reinkopiert
+	const Regex11 = /^\d{2}:\d{2}:\d{2}:\d{4}:\d{2}:\d{2}:\d{2}$/;
+	const Regex12 = /^\d{10}:\d{2}:\d{2}:\d{2}$/;
+	if((Regex11.test(Input.value.trim()) && CursorPos == 11) || (Regex12.test(Input.value.trim()) && CursorPos == 8))
+	{
+			Input.value = eight2TC(nurZahlen.substring(0, 8));		
+			return parseTC(Input);
+	}	
+	
+	
+	// Sonderfall: TC am Ende reinkopiert
+	const Regex13 = /^\d{2}:\d{2}:\d{2}:\d{10}$/;
+	if((Regex11.test(Input.value.trim()) && CursorPos == 22) || (Regex13.test(Input.value.trim()) && CursorPos == 19))
+	{
+			Input.value = eight2TC(nurZahlen.substring(8, 16));		
+			return parseTC(Input);
+	}
+
+
+
+	// Sonderfall: TC irgendwo reinkopiert      // 12:34:43:21
+	const Regex14 = /(\d{2}:\d{2}:\d{2}:\d{2})/;
+	const treffer = Input.value.trim().match(Regex14)?.[0] ?? 0;
+	
+	if(treffer.length == 11 && Input.value.trim().length > 11)
+	{
+			Input.value = eight2TC(treffer.trim().replace(/\D/g, ""));		
+			return parseTC(Input);
+	}		
+
+	Input.classList.add("is-invalid");
+	
+	return false;
+}
+
+
+function Mausrad(Input, Delta) {
+	let Ergebnis = 0;
+	
+	if(Delta > 0)			// verringern
+	{
+		Ergebnis = TC_to_Frames(Input.value) - 1;
+		if(Ergebnis < 0)
+		{
+			if(max_hours == 24)
+			{
+				document.getElementById("h_btngroup").style.display = "";
+				Ergebnis = TC_to_Frames("24:00:00:00") - 1;
+			}
+			else
+				Ergebnis = 0;
+		}
+		Input.value = Frames_to_TC(Ergebnis);	
+	}
+	
+	if(Delta < 0)			// erhöhen
+	{
+		Ergebnis = TC_to_Frames(Input.value) + 1;
+			
+		if(Ergebnis >= TC_to_Frames("24:00:00:00") && max_hours == 24)
+		{
+			document.getElementById("h_btngroup").style.display = "";
+			Ergebnis = 0;
+		}
+
+	}	
+	
+	Input.value = Frames_to_TC(Ergebnis);	
+	
+	calculate(Input.parentElement);
+}
+
+
+function toggle_Operator(Button) {
+	if(Button.innerText == "+")
+		Button.innerText = "-";
+	else
+		Button.innerText = "+";
+	calculate(Button.closest("div.input-group"));
+}
+
+
+function eight2TC(Input)
+{
+	return Input.substring(0, 2) + ":" + Input.substring(2, 4) + ":" + Input.substring(4, 6) + ":" + Input.substring(6,8);
+}
+
+
+
+function mehr_Zeilen() {
+	const zeilen = document.querySelectorAll('div.zeile');
+	const letzteZeile = zeilen[zeilen.length - 1];
+	const letztesErgebnis = letzteZeile.querySelector(".summe").value;
+
+	if (!letzteZeile)
+		return false;
+		
+	const geklonteZeile = letzteZeile.cloneNode(true);
+	const elternElement = letzteZeile.parentElement;
+	elternElement.appendChild(geklonteZeile);
+
+	
+	const alleZeilen = document.querySelectorAll('div.zeile');
+	const neueletzteZeile = alleZeilen[alleZeilen.length - 1];
+	
+	neueletzteZeile.querySelectorAll('input.summand').forEach(input => {
+		init_TC_input(input);
+	});
+	
+	neueletzteZeile.querySelectorAll('input.summe').forEach(output => {
+		init_TC_output(output);
+	});	
+	
+	/*
+	if(letztesErgebnis.length == 11 && letztesErgebnis != "00:00:00:00")
+	{
+		neueletzteZeile.querySelector(".summand").value = letztesErgebnis;
+		flashField(letzteZeile.querySelector(".summe"),10);
+		flashField(neueletzteZeile.querySelector('input.summand'),200);
+	}
+	else	
+	*/	
+		neueletzteZeile.querySelector(".summand").value = "00:00:00:00";
+		
+	neueletzteZeile.style.backgroundColor = document.querySelectorAll('div.zeile').length % 2 == 0 ? "#f6f6f6" : "#ffffff";		// Bänderung
+
+	neueletzteZeile.querySelector('input.summand').focus();	
+	parseTC(neueletzteZeile.querySelector('input.summand'));
+	parseTC(neueletzteZeile.querySelectorAll('input.summand')[1]);
+	calculate(neueletzteZeile.querySelector("div.input-group"));
+}
+
+
+function flashField(inputField, delay) {
+  //const inputField = document.getElementById(elementId);
+  
+  if (inputField) {
+    // Klasse hinzufügen, um die Animation zu starten
+    setTimeout(() => {
+       inputField.classList.add('input-flash-blue');
+    }, 10 + delay);	
+
+    
+    // Klasse später wieder entfernen
+    setTimeout(() => {
+      inputField.classList.remove('input-flash-blue');
+    }, 1600 + delay);
+  }
+}
+
+
+function toggle_Anleitung() {
+
+	if(document.getElementById('Anleitung').classList.contains('hidden'))
+	{
+		document.getElementById('Anleitung').classList.remove('hidden');
+		document.getElementById('Anleitung_btn').classList.remove('btn-outline-secondary');
+		document.getElementById('Anleitung_btn').classList.add('btn-secondary');	
+	} else {
+		document.getElementById('Anleitung').classList.add('hidden');
+		document.getElementById('Anleitung_btn').classList.add('btn-outline-secondary');
+		document.getElementById('Anleitung_btn').classList.remove('btn-secondary');	
+	}
+	return true;
+}
+
+
+</script>
+
+
+<style>
+
+	
+	
+	.tcbig {
+		font-family: Courier, Monaco, monospace;
+		font-weight: 900 ;
+		font-size: 2em !important;
+	}
+	
+	
+	.form-control.is-invalid {
+	  background-image: none; !important;
+	  padding-right: 1rem;  !important;
+	  color: red;
+	}
+
+
+	body {
+	  min-height: 100vh;
+	  margin: 0;
+	}
+
+
+	footer {
+	  height: 1em;
+	}
+
+
+	body {
+	  display: flex;
+	  flex-direction: column;
+	}
+
+	main {
+	  flex: 1;
+	}
+	
+	@keyframes flash-blue {
+	  0% {
+		background-color: #aaccff; /* Bootstrap primäres Blau */
+		//box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
+	  }
+	  100% {
+		background-color: #ffffff; /* Standard Bootstrap Border-Farbe */
+		//box-shadow: 0 0 0 0 transparent;
+	  }
+	}
+
+	.input-flash-blue {
+	  animation: flash-blue 1.5s ease-out;
+	}	
+	
+	.hidden {
+		  display: none;
+	  }	
+	
+
+</style>
+
+</head>
+<body>
+
+  <main class="container mt-4">
+  
+	<header class="row">
+		<div class="col-md-6">
+			<h2>TimeCode-Rechner</h2>
+			<div class="text-muted small">Version 1.0</div>
+		</div>
+
+		<div class="col-md-6 text-end mt-2">			
+
+			<div class="btn-group" role="group" aria-label="24 Stunden oder 99 Stunden" id="h_btngroup" style="display: none;">
+			  <input type="radio" class="btn-check" name="h_btnradio" value="24"  id="h_btnradio1" autocomplete="off" checked="">
+			  <label class="btn btn-outline-primary" for="h_btnradio1" title="Umbruch bei 24 Stunden (für Real-Time-Codes)">24 h</label>
+
+			  <input type="radio" class="btn-check" name="h_btnradio" value="99" id="h_btnradio2" autocomplete="off">
+			  <label class="btn btn-outline-primary" for="h_btnradio2" title="kein 24-h-Umbruch">99 h</label>
+			</div>			
+		
+		
+			<button type="button" class="btn btn-outline-secondary" id="Anleitung_btn" onClick="toggle_Anleitung();">Anleitung</button>		
+	
+			<button type="button" class="btn btn-outline-secondary" onClick="document.querySelectorAll('.summand, .summe').forEach(input => {input.value='00:00:00:00';});	document.querySelectorAll('input.summand').forEach(input => {parseTC(input);});">alles nullen</button>					
+
+<!--			<div class="btn-group" role="group">
+				<button type="button" class="btn btn-secondary" id="25f" title="25 Frames pro Sekunde" onClick="change_Framerate(25);">25 FPS</button>
+				<button type="button" class="btn btn-outline-secondary" id="50f" title="50 Frames pro Sekunde" onClick="change_Framerate(50);">50 FPS</button>
+			</div>
+			-->
+			
+			<div class="btn-group" role="group" aria-label="Frames pro Sekunde">
+			  <input type="radio" class="btn-check" name="FPS_btnradio" value="25"  id="FPS_btnradio1" autocomplete="off" checked="">
+			  <label class="btn btn-outline-secondary" for="FPS_btnradio1" title="25 Frames pro Sekunde">25 FPS</label>
+
+			  <input type="radio" class="btn-check" name="FPS_btnradio" value="50" id="FPS_btnradio2" autocomplete="off">
+			  <label class="btn btn-outline-secondary" for="FPS_btnradio2" title="50 Frames pro Sekunde">50 FPS</label>
+			</div>			
+			
+		</div>
+	</header>
+	
+	
+	
+	
+	<div>
+ 
+ 
+ 
+ 		<div class="row border rounded mt-5 p-4 hidden" id="Anleitung">
+		
+			  <h5>Tasten:</h5>
+			  <ul class="ms-5">
+				<li><span class="badge text-bg-secondary">n</span>- aktuelles Feld nullen</li>
+				<li><span class="badge text-bg-secondary">z</span> - neue Zeile</li>
+				<li><span class="badge text-bg-secondary">+</span> / <span class="badge text-bg-secondary">-</span> - schaltet den Operator in der aktuellen Zeile um (alternativ einfach auf den Operator klicken)</li>
+				<li><span class="badge text-bg-secondary">Pfeiltasten</span> - Zwischen den Felder navigieren</li>				
+			  </ul>
+		  
+			  <h5 class="mt-2">Maus:</h5>
+			  <ul class="ms-5">
+				<li><span class="badge text-bg-secondary">Drag&amp;Drop</span> - in ein beliebiges Ergebnisfeld klicken und in ein begliebiges Eingabefeld ziehen</li>
+				<li><span class="badge text-bg-secondary">Mausrad</span> - erhöht/verringert den Wert im aktuellen Eingabefeld um 1 Frame</li>			
+			  </ul>		
+			  
+			  <h5 class="mt-2">Schaltflächen:</h5>
+			  <ul class="ms-5">
+				<li><span class="badge text-bg-secondary">+</span> / <span class="badge text-bg-secondary">-</span> - schaltet den Operator um</li>
+				<li><span class="badge text-bg-secondary">=</span> - kopiert das dahinterstehende Ergebnis in die Zwischenablage</li>	
+				<li><span class="badge text-bg-secondary">25/50 FPS</span> - Umschaltung zwischen den Frameraten</li>		
+				<li><span class="badge text-bg-secondary">24/99 h</span> - Schaltet den Umbruch bei 24 Stunden an/aus (f&uuml;r Real-Time-Codes). (wird nur angezeigt, wenn relevant)</li>							
+			  </ul>				  
+
+			  <h5 class="mt-2">Cursor:</h5>
+			  <ul class="ms-5">
+					<li>Steht der Cursor vor einer Ziffer, wird diese beim Tippen einfach überschrieben.</li>			  
+					<li>Steht der Cursor ganz rechts in einem Eingabefeld, rücken vorhandene Ziffern bei weiteren Eingaben einfach nach links durch (wie bei einem Taschenrechner).</li>
+			  </ul>		
+		  
+		  
+		</div>	
+ 
+ 
+ 
+		<div class="row border rounded mt-5 zeile">
+		
+		  <div class="form-group col-md-12 p-4">
+			  <div class="input-group input-group-lg">
+				<input type="text" class="form-control tcbig text-end summand">
+				<button type="button" class="btn btn-outline-secondary tcbig operator" title="Operator umschalten" onClick="toggle_Operator(this);">+</button>
+				<input type="text" class="form-control tcbig text-end summand">
+				<button type="button" class="btn btn-outline-secondary tcbig" title="Ergebnis in die Zwischenablage kopieren" onClick="navigator.clipboard.writeText(this.nextElementSibling.value);">=</button>
+				<input type="text" class="form-control tcbig text-end summe" title="Ergebnisfeld (auf das = davor klicken, um Ergebnis zu kopieren)" readonly placeholder="--:--:--:--">			
+				
+			  </div>
+		  </div>		
+
+		  
+		</div>		
+	
+	</div>
+	
+	<div class="row mt-5">
+	
+	  <div class="form-group col-md-12 p-4 text-center">
+
+			<button type="button" class="btn btn-outline-secondary" title="neue Zeile anfügen und Ergebnis aus der letzten Zeile übernehmen" onClick="mehr_Zeilen();">neue Zeile</button>
+
+	  </div>		
+	</div>	
+ 
+		  
+  </main>
+
+
+	<footer class="py-3 my-4 border-top">
+	  <p class="text-center text-body-secondary"><a class="text-muted" href="https://www.d9s.de">www.d9s.de</a></p>
+	</footer>
+		
+		 	
+	
+ 
+</body>
+</html>
