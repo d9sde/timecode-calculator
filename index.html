@@ -690,7 +690,7 @@ function change_FPS() {
 	.tcbig {
 		font-family: Courier, Monaco, monospace;
 		font-weight: 900 ;
-		font-size: 2em !important;
+		font-size: clamp(1.5rem, 2.8vw, 3rem) !important;
 	}
 	
 	
@@ -822,9 +822,9 @@ function change_FPS() {
 		
 		  <div class="form-group col-md-12 p-4">
 			  <div class="input-group input-group-lg">
-				<input type="text" class="form-control tcbig text-end summand">
+				<input type="text" class="form-control tcbig text-end summand" inputmode="numeric">
 				<button type="button" class="btn btn-outline-secondary tcbig operator" title="Operator umschalten" onClick="toggle_Operator(this);">+</button>
-				<input type="text" class="form-control tcbig text-end summand">
+				<input type="text" class="form-control tcbig text-end summand" inputmode="numeric">
 				<button type="button" class="btn btn-outline-secondary tcbig" title="Ergebnis in die Zwischenablage kopieren" onClick="navigator.clipboard.writeText(this.nextElementSibling.value);">=</button>
 				<input type="text" class="form-control tcbig text-end summe" title="Ergebnisfeld (auf das = davor klicken, um Ergebnis zu kopieren)" readonly placeholder="--:--:--:--">			
 				
