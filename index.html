@@ -14,6 +14,7 @@
 // 05/2026
 
 let FramesPerSecond = 25;
+const FPS_options = [24, 25, 30, 50, 60];
 let max_hours = 24;
 
 
@@ -27,17 +28,7 @@ window.onload = function() {
 		init_TC_output(output);
 	});	
 	
-	document.querySelectorAll('input[name="FPS_btnradio"]').forEach(radio => {					// FPS-Buttons registrieren
-		radio.addEventListener('change', (event) => {
-			//console.log("Ausgewählter Wert:", event.target.value);
-			FramesPerSecond = event.target.value;
-			
-			document.querySelectorAll('input.summand').forEach(input => {		parseTC(input);			});
-			document.querySelectorAll('div.input-group').forEach(inputrow => {	calculate(inputrow);	});			
-		});
-	});
-	
-	document.querySelectorAll('input[name="h_btnradio"]').forEach(radio => {					// FPS-Buttons registrieren
+	document.querySelectorAll('input[name="h_btnradio"]').forEach(radio => {					// h-Buttons registrieren
 		radio.addEventListener('change', (event) => {
 			//console.log("Ausgewählter Wert:", event.target.value);
 			max_hours = event.target.value;
@@ -91,7 +82,13 @@ function init_TC_input(Input_Object) {
 			event.preventDefault(); 
 			mehr_Zeilen();
 			return true;
-		}		
+		}
+
+		if (event.key === 'f' || event.key === 'F') {				// neue Zeile
+			event.preventDefault(); 
+			change_FPS();
+			return true;
+		}			
 
 		if (event.key === 'ArrowUp') {
 			event.preventDefault(); 
@@ -288,15 +285,31 @@ function parseTC(Input) {
 	
 	if(max_hours == 24)
 	{
-		if(FramesPerSecond == 25)
-			gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-4]))$/;			// 25 Frames
-		else
-			gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:[0-4]\d$/;						// 50 Frames		
+		switch(FramesPerSecond) {
+		case 24: gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-3]))$/;
+			break;
+		case 25: gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-4]))$/;
+			break;
+		case 30: gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:[0-2]\d$/;
+			break;				
+		case 50: gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:[0-4]\d$/;
+			break;	
+		case 60: default: gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:[0-5]\d$/;
+			break;				
+		}	
 	} else {
-		if(FramesPerSecond == 25)
-			gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-4]))$/;			// 25 Frames
-		else
-			gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:[0-4]\d$/;						// 50 Frames	
+		switch(FramesPerSecond) {
+		case 24: gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-3]))$/;
+			break;
+		case 25: gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-4]))$/;
+			break;
+		case 30: gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:[0-2]\d$/;
+			break;				
+		case 50: gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:[0-4]\d$/;
+			break;	
+		case 60: default: gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:[0-5]\d$/;
+			break;				
+		}	
 	}
 
 
@@ -650,6 +663,22 @@ function toggle_Anleitung() {
 	return true;
 }
 
+function change_FPS() {
+
+	let index = FPS_options.indexOf(FramesPerSecond);
+	
+	if(index == FPS_options.length - 1)
+		FramesPerSecond = FPS_options[0];
+	else
+		FramesPerSecond = FPS_options[index + 1];
+	
+	document.getElementById("FPS_btn").innerText = FramesPerSecond + " FPS";
+	
+	document.querySelectorAll('input.summand').forEach(input => {		parseTC(input);			});				// re-evaluate inputs
+	document.querySelectorAll('div.input-group').forEach(inputrow => {	calculate(inputrow);	});				// re-calculate, because result may be differen now
+	return true;
+}
+
 
 </script>
 
@@ -740,20 +769,9 @@ function toggle_Anleitung() {
 	
 			<button type="button" class="btn btn-outline-secondary" onClick="document.querySelectorAll('.summand, .summe').forEach(input => {input.value='00:00:00:00';});	document.querySelectorAll('input.summand').forEach(input => {parseTC(input);});">alles nullen</button>					
 
-<!--			<div class="btn-group" role="group">
-				<button type="button" class="btn btn-secondary" id="25f" title="25 Frames pro Sekunde" onClick="change_Framerate(25);">25 FPS</button>
-				<button type="button" class="btn btn-outline-secondary" id="50f" title="50 Frames pro Sekunde" onClick="change_Framerate(50);">50 FPS</button>
-			</div>
-			-->
 			
-			<div class="btn-group" role="group" aria-label="Frames pro Sekunde">
-			  <input type="radio" class="btn-check" name="FPS_btnradio" value="25"  id="FPS_btnradio1" autocomplete="off" checked="">
-			  <label class="btn btn-outline-secondary" for="FPS_btnradio1" title="25 Frames pro Sekunde">25 FPS</label>
-
-			  <input type="radio" class="btn-check" name="FPS_btnradio" value="50" id="FPS_btnradio2" autocomplete="off">
-			  <label class="btn btn-outline-secondary" for="FPS_btnradio2" title="50 Frames pro Sekunde">50 FPS</label>
-			</div>			
-			
+			<button type="button" class="btn btn-outline-secondary" id="FPS_btn" onClick="change_FPS();" title="Framerate ändern">25 FPS</button>				
+		
 		</div>
 	</header>
 	
@@ -770,6 +788,7 @@ function toggle_Anleitung() {
 			  <ul class="ms-5">
 				<li><span class="badge text-bg-secondary">n</span>- aktuelles Feld nullen</li>
 				<li><span class="badge text-bg-secondary">z</span> - neue Zeile</li>
+				<li><span class="badge text-bg-secondary">f</span> - Framerate ändern</li>
 				<li><span class="badge text-bg-secondary">+</span> / <span class="badge text-bg-secondary">-</span> - schaltet den Operator in der aktuellen Zeile um (alternativ einfach auf den Operator klicken)</li>
 				<li><span class="badge text-bg-secondary">Pfeiltasten</span> - Zwischen den Felder navigieren</li>				
 			  </ul>
