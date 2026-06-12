@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=480, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TimeCode-Rechner</title>
   <link href="css/bootstrap_5_3_8.min.css" rel="stylesheet">
 
@@ -741,20 +741,13 @@ function change_FPS() {
 	  }	
 	  
 	  
-	  @media (max-width: 992px) {								// for better look on mobile devices
-
-	  .input-group.flex-wrap .form-control, 
-	  .input-group.flex-wrap .btn {
-		border-radius: 0.375rem !important; /* Standard Bootstrap Radius */
-	  }
-  
+	@media (max-width: 992px) 
+	{							
 		.tcbig {
-			//font-size: 4rem !important;
 			font-size: clamp(2rem, 6vw, 4rem) !important;
+			border-radius: 0.375rem !important; 
 		}	  
 	}
-
-
 
 
 	
@@ -803,30 +796,30 @@ function change_FPS() {
  		<div class="row border rounded mt-5 p-4 hidden" id="Anleitung">
 		
 			  <h5>Tasten:</h5>
-			  <ul class="ms-5 pe-5">
-				<li><span class="badge text-bg-secondary">n</span>- aktuelles Feld nullen</li>
-				<li><span class="badge text-bg-secondary">z</span> - neue Zeile</li>
-				<li><span class="badge text-bg-secondary">f</span> - Framerate ändern</li>
-				<li><span class="badge text-bg-secondary">+</span> / <span class="badge text-bg-secondary">-</span> - schaltet den Operator in der aktuellen Zeile um (alternativ einfach auf den Operator klicken)</li>
-				<li><span class="badge text-bg-secondary">Pfeiltasten</span> - Zwischen den Felder navigieren</li>				
+			  <ul class="ms-5">
+				<li><span class="badge text-bg-secondary">n</span> &ndash; aktuelles Feld nullen</li>
+				<li><span class="badge text-bg-secondary">z</span> &ndash; neue Zeile</li>
+				<li><span class="badge text-bg-secondary">f</span> &ndash; Framerate ändern</li>
+				<li><span class="badge text-bg-secondary">+</span> / <span class="badge text-bg-secondary">-</span> &ndash; schaltet den Operator in der aktuellen Zeile um (alternativ einfach auf den Operator klicken)</li>
+				<li><span class="badge text-bg-secondary">Pfeiltasten</span> &ndash; Zwischen den Felder navigieren</li>				
 			  </ul>
 		  
 			  <h5 class="mt-2">Maus:</h5>
-			  <ul class="ms-5 pe-5">
-				<li><span class="badge text-bg-secondary">Drag&amp;Drop</span> - in ein beliebiges Ergebnisfeld klicken und in ein begliebiges Eingabefeld ziehen</li>
-				<li><span class="badge text-bg-secondary">Mausrad</span> - erhöht/verringert den Wert im aktuellen Eingabefeld um 1 Frame</li>			
+			  <ul class="ms-5">
+				<li><span class="badge text-bg-secondary">Drag&amp;Drop</span> &ndash; in ein beliebiges Ergebnisfeld klicken und in ein begliebiges Eingabefeld ziehen</li>
+				<li><span class="badge text-bg-secondary">Mausrad</span> &ndash; erhöht/verringert den Wert im aktuellen Eingabefeld um 1 Frame</li>			
 			  </ul>		
 			  
 			  <h5 class="mt-2">Schaltflächen:</h5>
-			  <ul class="ms-5 pe-5">
-				<li><span class="badge text-bg-secondary">+</span> / <span class="badge text-bg-secondary">-</span> - schaltet den Operator um</li>
-				<li><span class="badge text-bg-secondary">=</span> - kopiert das dahinterstehende Ergebnis in die Zwischenablage</li>	
-				<li><span class="badge text-bg-secondary">xx FPS</span> - Umschaltung zwischen den Frameraten</li>		
-				<li><span class="badge text-bg-secondary">24/99 h</span> - Schaltet den Umbruch bei 24 Stunden an/aus (f&uuml;r Real-Time-Codes). (wird nur angezeigt, wenn relevant)</li>							
+			  <ul class="ms-5">
+				<li><span class="badge text-bg-secondary">+</span> / <span class="badge text-bg-secondary">-</span> &ndash; schaltet den Operator um</li>
+				<li><span class="badge text-bg-secondary">=</span> &ndash; kopiert das dahinterstehende Ergebnis in die Zwischenablage</li>	
+				<li><span class="badge text-bg-secondary">xx FPS</span> &ndash; Umschaltung zwischen den Frameraten</li>		
+				<li><span class="badge text-bg-secondary">24/99 h</span> &ndash; Schaltet den Umbruch bei 24 Stunden an/aus (f&uuml;r Real-Time-Codes). (wird nur angezeigt, wenn relevant)</li>							
 			  </ul>				  
 
 			  <h5 class="mt-2">Cursor:</h5>
-			  <ul class="ms-5 pe-5">
+			  <ul class="ms-5">
 					<li>Steht der Cursor vor einer Ziffer, wird diese beim Tippen einfach überschrieben.</li>			  
 					<li>Steht der Cursor ganz rechts in einem Eingabefeld, rücken vorhandene Ziffern bei weiteren Eingaben einfach nach links durch (wie bei einem Taschenrechner).</li>
 			  </ul>		
