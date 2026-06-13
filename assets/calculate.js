@@ -562,6 +562,7 @@ function add_line() {
 	
 	const allLinesWithAddedLine = document.querySelectorAll('div.zeile');
 	const newLastLine = allLinesWithAddedLine[allLinesWithAddedLine.length - 1];
+	const oldLastLine = allLinesWithAddedLine[allLinesWithAddedLine.length - 2];
 	
 	newLastLine.querySelectorAll('input.addend').forEach(input => {
 		init_TC_input(input);
@@ -575,7 +576,7 @@ function add_line() {
 	if(lastResult.length == 11 && lastResult != "00:00:00:00")
 	{
 		newLastLine.querySelector(".addend").value = lastResult;
-		flashField(lastLine.querySelector(".sum"),10);
+		flashField(oldLastLine.querySelector(".sum"),10);
 		flashField(newLastLine.querySelector('input.addend'),200);
 	}
 	else	
