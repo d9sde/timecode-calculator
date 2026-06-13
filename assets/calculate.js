@@ -557,7 +557,7 @@ function add_line() {
 		
 	const clonedLine = lastLine.cloneNode(true);
 	const parentElement = lastLine.parentElement;
-	parentElement.appendChild(clonedLine);
+	parentElement.insertBefore(clonedLine, lastLine);
 
 	
 	const allLinesWithAddedLine = document.querySelectorAll('div.zeile');

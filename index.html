@@ -1,205 +1,28 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TimeCode-Rechner</title>
-  <link href="assets/bootstrap_5_3_8.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Redirect</title>
+    <script>
+        // redirect depending on language
+        (function() {
+            var userLang = navigator.language || navigator.userLanguage; 
+            
+            userLang = userLang.substr(0, 2).toLowerCase();
 
-  <script src="assets/calculate.js"></script>
-
-  <style>
-
-	
-	.tcbig {
-		font-family: Courier, Monaco, monospace;
-		font-weight: 900 ;
-		font-size: clamp(1.5rem, 2.3vw, 3rem) !important;
-	}
-	
-	
-	.form-control.is-invalid {
-	  background-image: none; !important;
-	  padding-right: 1rem;  !important;
-	  color: red;
-	}
-
-
-	body {
-	  min-height: 100vh;
-	  margin: 0;
-	}
-
-
-	footer {
-	  height: 1em;
-	}
-
-
-	body {
-	  display: flex;
-	  flex-direction: column;
-	}
-
-	main {
-	  flex: 1;
-	}
-	
-	@keyframes flash-blue {
-	  0% {
-		background-color: #aaccff; /* Bootstrap primäres Blau */
-		//box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
-	  }
-	  100% {
-		background-color: #ffffff; /* Standard Bootstrap Border-Farbe */
-		//box-shadow: 0 0 0 0 transparent;
-	  }
-	}
-
-	.input-flash-blue {
-	  animation: flash-blue 1.5s ease-out;
-	}	
-	
-	.hidden {
-		  display: none;
-	}	
-	  
-	  
-	@media (max-width: 992px) 
-	{							
-		.tcbig {
-			font-size: clamp(2rem, 6vw, 4rem) !important;
-			border-radius: 0.375rem !important; 
-		}	  
-	}
-
-
-	
-
-</style>
-
+            if (userLang === 'de') {
+                window.location.href = 'index_de.html';
+            } else {
+                window.location.href = 'index_en.html';
+            }
+        })();
+    </script>
 </head>
 <body>
-
-  <main class="container mt-4">
-  
-	<header class="row">
-		<div class="col-md-6">
-			<h2>TimeCode-Rechner</h2>
-			<div class="text-muted small">Version 1.1</div>
-		</div>
-
-		<div class="col-md-6 text-end mt-2">			
-
-			<button type="button" class="btn btn-outline-secondary" id="opManual_btn" onClick="toggleManual();">Anleitung</button>		
-	
-			<button type="button" class="btn btn-outline-secondary" onClick="document.querySelectorAll('.addend, .sum').forEach(input => {input.value='00:00:00:00';});	document.querySelectorAll('input.addend').forEach(input => {parseTC(input);});">alles nullen</button>					
-
-			<button type="button" class="btn btn-outline-secondary" id="max_hours_btn" onClick="change_max_hours();" title="24-h-Umbruch an/aus">24 h</button>	
-			
-			<button type="button" class="btn btn-outline-secondary" id="FPS_btn" onClick="change_FPS();" title="Framerate ändern">25 FPS</button>				
-		
-		</div>
-	</header>
-	
-	
-	
-	
-	<div>
- 
- 
- 
- 		<div class="row border rounded mt-5 p-4 hidden" id="opManual">
-		
-			  <h5>Tasten:</h5>
-			  <ul class="ms-5 pe-5">
-				<li><span class="badge text-bg-secondary">n</span> &ndash; aktuelles Feld nullen</li>
-				<li><span class="badge text-bg-secondary">z</span> &ndash; neue Zeile</li>
-				<li><span class="badge text-bg-secondary">f</span> &ndash; Framerate ändern</li>
-				<li><span class="badge text-bg-secondary">+</span> / <span class="badge text-bg-secondary">-</span> &ndash; schaltet den Operator in der aktuellen Zeile um (alternativ einfach auf den Operator klicken)</li>
-				<li><span class="badge text-bg-secondary">Pfeiltasten</span> &ndash; Zwischen den Felder navigieren</li>				
-			  </ul>
-		  
-			  <h5 class="mt-2">Maus:</h5>
-			  <ul class="ms-5 pe-5">
-				<li><span class="badge text-bg-secondary">Drag&amp;Drop</span> &ndash; in ein beliebiges Ergebnis klicken und in ein begliebiges Eingabefeld ziehen</li>
-				<li><span class="badge text-bg-secondary">Mausrad</span> &ndash; erhöht/verringert den Wert im aktuellen Eingabefeld um 1 Frame</li>			
-			  </ul>		
-			  
-			  <h5 class="mt-2">Schaltflächen:</h5>
-			  <ul class="ms-5 pe-5">
-				<li><span class="badge text-bg-secondary">+</span> / <span class="badge text-bg-secondary">-</span> &ndash; schaltet den Operator um</li>
-				<li><span class="badge text-bg-secondary">=</span> &ndash; kopiert das dahinterstehende Ergebnis in die Zwischenablage</li>	
-				<li><span class="badge text-bg-secondary">xx FPS</span> &ndash; Umschaltung zwischen den Frameraten</li>		
-				<li><span class="badge text-bg-secondary">24/99 h</span> &ndash; Schaltet den Umbruch bei 24 Stunden an bzw. aus (f&uuml;r Real-Time-Codes)</li>							
-			  </ul>				  
-
-			  <h5 class="mt-2">Cursor:</h5>
-			  <ul class="ms-5 pe-5">
-					<li>Steht der Cursor vor einer Ziffer, wird diese beim Tippen einfach überschrieben.</li>			  
-					<li>Steht der Cursor ganz rechts in einem Eingabefeld, rücken vorhandene Ziffern bei weiteren Eingaben einfach nach links durch (wie bei einem Taschenrechner).</li>
-			  </ul>		
-		  
-		  
-		</div>	
- 
- 
- 
-		<div class="row border rounded mt-5 zeile">
-		  <div class="form-group col-md-12 p-4">
-
-			<div class="input-group input-group-lg flex-wrap">
-
-			  <!-- first addend -->
-			  <input type="text" class="form-control tcbig text-end addend" inputmode="numeric">
-
-			  <!-- operator -->
-			  <div class="w-100 d-block d-lg-none"></div>
-			  <button type="button" class="btn btn-outline-secondary tcbig operator"
-					  title="Operator umschalten"
-					  onClick="toggle_Operator(this);">+</button>
-
-			  <!-- second addend -->
-			  <input type="text" class="form-control tcbig text-end addend" inputmode="numeric">
-
-			  <!-- equal sign -->
-			  <div class="w-100 d-block d-lg-none"></div>
-			  <button type="button" class="btn btn-outline-secondary tcbig"
-					  title="resultingFrames in die Zwischenablage kopieren"
-					  onClick="navigator.clipboard.writeText(this.nextElementSibling.value);">=</button>
-
-			  <!-- result -->
-			  <input type="text" class="form-control tcbig text-end sum"
-					 title="resultField (auf das = davor klicken, um resultingFrames zu kopieren)"
-					 readonly placeholder="--:--:--:--">
-
-			</div>
-
-		  </div>
-		</div>
-	
-	
-	</div>
-	
-	<div class="row mt-5">
-	
-	  <div class="form-group col-md-12 p-4 text-center">
-
-			<button type="button" class="btn btn-outline-secondary" title="neue Zeile anfügen und resultingFrames aus der letzten Zeile übernehmen" onClick="add_line();">neue Zeile</button>
-
-	  </div>		
-	</div>	
- 
-		  
-  </main>
-
-
-	<footer class="py-3 my-4 border-top">
-	  <p class="text-center text-body-secondary"><a class="text-muted" href="https://www.d9s.de">www.d9s.de</a></p>
-	</footer>
-		
-		 	
-	
- 
+    <p>please choose your language:</p>
+    <ul>
+        <li><a href="index_en.html">English</a></li>
+        <li><a href="index_de.html">Deutsch</a></li>		
+    </ul>
 </body>
 </html>
