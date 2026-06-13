@@ -15,30 +15,21 @@
 // 05/2026
 
 let framesPerSecond = 25;						// default FPS option
-const FPS_options = [24, 25, 48, 30, 50, 60];	// available FPS options
-let max_hours = 24;								// default option for maximal hour value
+const FPS_options = [24, 25, 30, 48, 50, 60];	// available FPS options
+let max_hours = 24;								// default option for maximal hour value (24 is relevant for real-time)
 
 
 window.onload = function() {
 
-	document.querySelectorAll('input.addend').forEach(input => {
+	document.querySelectorAll('input.addend').forEach(input => {		// init input fields
 		init_TC_input(input);
 	});
 	
-	document.querySelectorAll('input.sum').forEach(output => {
+	document.querySelectorAll('input.sum').forEach(output => {			// init output fields
 		init_TC_output(output);
 	});	
 	
-	document.querySelectorAll('input[name="h_btnradio"]').forEach(radio => {				
-		radio.addEventListener('change', (event) => {
-			max_hours = event.target.value;
-			
-			document.querySelectorAll('input.addend').forEach(input => {		parseTC(input);			});
-			document.querySelectorAll('div.input-group').forEach(inputrow => {	calculate(inputrow);	});			
-		});
-	});	
-	
-	document.querySelector('input.addend').focus();
+	document.querySelector('input.addend').focus();						// focus an firts addend field
 }
 
 
@@ -220,16 +211,10 @@ function calculate(InputGroup) {
 		resultInframes = TC_to_frames(Argument1.value) + TC_to_frames(Argument2.value);	
 		
 	if(max_hours == 24 && resultInframes >= TC_to_frames("24:00:00:00"))
-	{
-		document.getElementById("h_btngroup").style.display = "";
 		resultInframes = resultInframes % TC_to_frames("24:00:00:00");
-	}
 
 	if(max_hours == 24 && resultInframes < 0)
-	{
-		document.getElementById("h_btngroup").style.display = "";
 		resultInframes = TC_to_frames("24:00:00:00") - (Math.abs(resultInframes) % TC_to_frames("24:00:00:00"));		
-	}
 	
 	resultField.value = frames_to_TC(resultInframes);
 	
@@ -528,10 +513,7 @@ function handle_wheel_movement(Input, Delta) {
 		if(resultingFrames < 0)
 		{
 			if(max_hours == 24)
-			{
-				document.getElementById("h_btngroup").style.display = "";
 				resultingFrames = TC_to_frames("24:00:00:00") - 1;
-			}
 			else
 				resultingFrames = 0;
 		}
@@ -543,11 +525,7 @@ function handle_wheel_movement(Input, Delta) {
 		resultingFrames = TC_to_frames(Input.value) + 1;
 			
 		if(resultingFrames >= TC_to_frames("24:00:00:00") && max_hours == 24)
-		{
-			document.getElementById("h_btngroup").style.display = "";
 			resultingFrames = 0;
-		}
-
 	}	
 	
 	Input.value = frames_to_TC(resultingFrames);	
@@ -660,6 +638,24 @@ function change_FPS() {
 	return true;
 }
 
+function change_max_hours() {
+
+	const button = document.getElementById("max_hours_btn");
+
+	if(max_hours == 24)
+	{
+		max_hours = 99;
+		button.innerText = "99 h";	
+	} else {
+		max_hours = 24;
+		button.innerText = "24 h";
+	}
+	
+	document.querySelectorAll('input.addend').forEach(input => {		parseTC(input);			});				// re-evaluate inputs
+	document.querySelectorAll('div.input-group').forEach(inputrow => {	calculate(inputrow);	});				// re-calculate, because result may be differen now
+	return true;
+}
+
 
 </script>
 
@@ -748,19 +744,11 @@ function change_FPS() {
 
 		<div class="col-md-6 text-end mt-2">			
 
-			<div class="btn-group" role="group" aria-label="24 hours oder 99 hours" id="h_btngroup" style="display: none;">
-			  <input type="radio" class="btn-check" name="h_btnradio" value="24"  id="h_btnradio1" autocomplete="off" checked="">
-			  <label class="btn btn-outline-primary" for="h_btnradio1" title="Umbruch bei 24 hours (für Real-Time-Codes)">24 h</label>
-
-			  <input type="radio" class="btn-check" name="h_btnradio" value="99" id="h_btnradio2" autocomplete="off">
-			  <label class="btn btn-outline-primary" for="h_btnradio2" title="kein 24-h-Umbruch">99 h</label>
-			</div>			
-		
-		
 			<button type="button" class="btn btn-outline-secondary" id="Anleitung_btn" onClick="toggleManual();">Anleitung</button>		
 	
 			<button type="button" class="btn btn-outline-secondary" onClick="document.querySelectorAll('.addend, .sum').forEach(input => {input.value='00:00:00:00';});	document.querySelectorAll('input.addend').forEach(input => {parseTC(input);});">alles nullen</button>					
 
+			<button type="button" class="btn btn-outline-secondary" id="max_hours_btn" onClick="change_max_hours();" title="24-h-Umbruch an/aus">24 h</button>	
 			
 			<button type="button" class="btn btn-outline-secondary" id="FPS_btn" onClick="change_FPS();" title="Framerate ändern">25 FPS</button>				
 		
@@ -796,7 +784,7 @@ function change_FPS() {
 				<li><span class="badge text-bg-secondary">+</span> / <span class="badge text-bg-secondary">-</span> &ndash; schaltet den Operator um</li>
 				<li><span class="badge text-bg-secondary">=</span> &ndash; kopiert das dahinterstehende Ergebnis in die Zwischenablage</li>	
 				<li><span class="badge text-bg-secondary">xx FPS</span> &ndash; Umschaltung zwischen den Frameraten</li>		
-				<li><span class="badge text-bg-secondary">24/99 h</span> &ndash; Schaltet den Umbruch bei 24 hours an/aus (f&uuml;r Real-Time-Codes). (wird nur angezeigt, wenn relevant)</li>							
+				<li><span class="badge text-bg-secondary">24/99 h</span> &ndash; Schaltet den Umbruch bei 24 hours an/aus (f&uuml;r Real-Time-Codes)</li>							
 			  </ul>				  
 
 			  <h5 class="mt-2">Cursor:</h5>
@@ -815,25 +803,25 @@ function change_FPS() {
 
 			<div class="input-group input-group-lg flex-wrap">
 
-			  <!-- addend 1 -->
+			  <!-- first addend -->
 			  <input type="text" class="form-control tcbig text-end addend" inputmode="numeric">
 
-			  <!-- Button 1 -->
+			  <!-- operator -->
 			  <div class="w-100 d-block d-lg-none"></div>
 			  <button type="button" class="btn btn-outline-secondary tcbig operator"
 					  title="Operator umschalten"
 					  onClick="toggle_Operator(this);">+</button>
 
-			  <!-- addend 2 -->
+			  <!-- second addend -->
 			  <input type="text" class="form-control tcbig text-end addend" inputmode="numeric">
 
-			  <!-- Button 2 -->
+			  <!-- equal sign -->
 			  <div class="w-100 d-block d-lg-none"></div>
 			  <button type="button" class="btn btn-outline-secondary tcbig"
 					  title="resultingFrames in die Zwischenablage kopieren"
 					  onClick="navigator.clipboard.writeText(this.nextElementSibling.value);">=</button>
 
-			  <!-- resultingFrames -->
+			  <!-- result -->
 			  <input type="text" class="form-control tcbig text-end sum"
 					 title="resultField (auf das = davor klicken, um resultingFrames zu kopieren)"
 					 readonly placeholder="--:--:--:--">
