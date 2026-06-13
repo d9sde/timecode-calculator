@@ -11,7 +11,7 @@ A highly capable, intuitive and lightweight browser-based timecode calculator op
 
 - **Precise Arithmetic:** Effortlessly add and subtract professional timecodes.
 - **Multiple Simultaneous Calculations:** Track and perform several calculations at once without losing your progress.
-- **Comprehensive Framerate Support:** Works seamlessly with various standard production framerates (e.g., 23.976, 24, 25, 29.97, 30, 50, 59.94, 60 fps).
+- **Comprehensive Framerate Support:** Works seamlessly with various standard production framerates (e.g. 24, 25, 30, 48, 50 and 60 fps).
 - **Responsive Design:** Optimized user experience for both mobile phones on-set and widescreen desktop monitors in the editing suite.
 - **Zero Installation:** Pure browser-based tool. No plugins, downloads, or sign-ups required.
 
@@ -27,7 +27,7 @@ You can use the calculator directly in your browser:
 
 ## 📦 Local Deployment
 
-Since this project is completely browser-based, running it locally is incredibly simple. Just clone the repository to any place you want and run index.html in your browser:
+Since this project is completely browser-based, running it locally is incredibly simple. Just clone the repository (or download .zip file) to any place you want and run index.html in your browser:
 
    ```bash
    git clone https://github.com/d9sde/timecode-calculator
