@@ -1,8 +1,15 @@
+//
+// TimeCode Calculator
+// by Danny Schreiter
+// contact: www.d9s.de
+// 06/2026
+//
+// see https://d9sde.github.io/timecode-calculator/ for license and further details
+//
+
 
 "use strict";
 
-// Danny Schreiter
-// 05/2026
 
 let framesPerSecond = 25;						// default FPS option
 const FPS_options = [24, 25, 30, 48, 50, 60];	// available FPS options
@@ -212,7 +219,7 @@ function calculate(InputGroup) {
 }
 
 
-function TC_to_frames(TC) {
+function TC_to_frames(TC) {										// converts TC string to number of frames
 	const hours = Number(TC.trim().substring(0, 2));
 	const minutes = Number(TC.trim().substring(3, 5));
 	const seconds = Number(TC.trim().substring(6, 8));
@@ -222,12 +229,12 @@ function TC_to_frames(TC) {
 }
 
 
-function frames_to_TC(framesGes) {
-	let Vorzeichen = "";
+function frames_to_TC(framesGes) {								// converts number of frames to TC string
+	let prefixCharacter = "";
 	if(framesGes < 0)
 	{
 		framesGes = Math.abs(framesGes);
-		Vorzeichen = "-";
+		prefixCharacter = "-";
 	}
 	const frames = framesGes % framesPerSecond;
 	let Rest = Math.trunc(framesGes / framesPerSecond);
@@ -237,43 +244,43 @@ function frames_to_TC(framesGes) {
 	const hours = Math.trunc(Rest / 60);	
 	
 	
-	return Vorzeichen + hours.toString().padStart(2, '0') + ":" + minutes.toString().padStart(2, '0') + ":" + seconds.toString().padStart(2, '0') + ":" + frames.toString().padStart(2, '0');
+	return prefixCharacter + hours.toString().padStart(2, '0') + ":" + minutes.toString().padStart(2, '0') + ":" + seconds.toString().padStart(2, '0') + ":" + frames.toString().padStart(2, '0');
 }
 
 
 
 function parseTC(Input) {
 	Input.classList.remove("is-invalid");
-	let gueltiger_TC = /0/;
+	
+	let valid_TC = /0/;
 	
 	const CursorPos = Input.selectionStart == Input.selectionEnd ? Input.selectionStart : -1;
-	//console.log("Cursor: ", CursorPos);
 	
 	if(max_hours == 24)
 	{
 		switch(framesPerSecond) {
-		case 24: gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-3]))$/;
+		case 24: valid_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-3]))$/;
 			break;
-		case 25: gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-4]))$/;
+		case 25: valid_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-4]))$/;
 			break;
-		case 30: gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:[0-2]\d$/;
+		case 30: valid_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:[0-2]\d$/;
 			break;				
-		case 50: gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:[0-4]\d$/;
+		case 50: valid_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:[0-4]\d$/;
 			break;	
-		case 60: default: gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:[0-5]\d$/;
+		case 60: default: valid_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:[0-5]\d$/;
 			break;				
 		}	
 	} else {
 		switch(framesPerSecond) {
-		case 24: gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-3]))$/;
+		case 24: valid_TC = /^\d{2}:[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-3]))$/;
 			break;
-		case 25: gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-4]))$/;
+		case 25: valid_TC = /^\d{2}:[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-4]))$/;
 			break;
-		case 30: gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:[0-2]\d$/;
+		case 30: valid_TC = /^\d{2}:[0-5]\d:[0-5]\d:[0-2]\d$/;
 			break;				
-		case 50: gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:[0-4]\d$/;
+		case 50: valid_TC = /^\d{2}:[0-5]\d:[0-5]\d:[0-4]\d$/;
 			break;	
-		case 60: default: gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:[0-5]\d$/;
+		case 60: default: valid_TC = /^\d{2}:[0-5]\d:[0-5]\d:[0-5]\d$/;
 			break;				
 		}	
 	}
@@ -283,10 +290,10 @@ function parseTC(Input) {
 	
 	if(onlyNumbers.length == 8)
 	{
-		const mitDoppelpunkt = eight2TC(onlyNumbers);
-		if(gueltiger_TC.test(mitDoppelpunkt))
+		const TCstring = eight2TC(onlyNumbers);
+		if(valid_TC.test(TCstring))
 		{
-			Input.value = mitDoppelpunkt;
+			Input.value = TCstring;
 			Input.setSelectionRange(CursorPos, CursorPos);
 			return true;
 		}	
@@ -574,7 +581,7 @@ function add_line() {
 	else	
 		newLastLine.querySelector(".addend").value = "00:00:00:00";
 		
-	newLastLine.style.backgroundColor = document.querySelectorAll('div.zeile').length % 2 == 0 ? "#f6f6f6" : "#ffffff";		// Bänderung
+	newLastLine.style.backgroundColor = document.querySelectorAll('div.zeile').length % 2 == 0 ? "#f6f6f6" : "#ffffff";		// banding
 
 	newLastLine.querySelector('input.addend').focus();	
 	parseTC(newLastLine.querySelector('input.addend'));
@@ -599,15 +606,15 @@ function flashField(inputField, delay) {						// give a hint that the last resul
 
 function toggleManual() {
 
-	if(document.getElementById('Anleitung').classList.contains('hidden'))
+	if(document.getElementById('opManual').classList.contains('hidden'))
 	{
-		document.getElementById('Anleitung').classList.remove('hidden');
-		document.getElementById('Anleitung_btn').classList.remove('btn-outline-secondary');
-		document.getElementById('Anleitung_btn').classList.add('btn-secondary');	
+		document.getElementById('opManual').classList.remove('hidden');
+		document.getElementById('opManual_btn').classList.remove('btn-outline-secondary');
+		document.getElementById('opManual_btn').classList.add('btn-secondary');	
 	} else {
-		document.getElementById('Anleitung').classList.add('hidden');
-		document.getElementById('Anleitung_btn').classList.add('btn-outline-secondary');
-		document.getElementById('Anleitung_btn').classList.remove('btn-secondary');	
+		document.getElementById('opManual').classList.add('hidden');
+		document.getElementById('opManual_btn').classList.add('btn-outline-secondary');
+		document.getElementById('opManual_btn').classList.remove('btn-secondary');	
 	}
 	return true;
 }
