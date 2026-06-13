@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TimeCode-Rechner</title>
-  <link href="css/bootstrap_5_3_8.min.css" rel="stylesheet">
+  <link href="assets/bootstrap_5_3_8.min.css" rel="stylesheet">
 
 <script>
 
@@ -14,32 +14,31 @@
 // Danny Schreiter
 // 05/2026
 
-let FramesPerSecond = 25;
-const FPS_options = [24, 25, 30, 50, 60];
-let max_hours = 24;
+let framesPerSecond = 25;						// default FPS option
+const FPS_options = [24, 25, 48, 30, 50, 60];	// available FPS options
+let max_hours = 24;								// default option for maximal hour value
 
 
 window.onload = function() {
 
-	document.querySelectorAll('input.summand').forEach(input => {
+	document.querySelectorAll('input.addend').forEach(input => {
 		init_TC_input(input);
 	});
 	
-	document.querySelectorAll('input.summe').forEach(output => {
+	document.querySelectorAll('input.sum').forEach(output => {
 		init_TC_output(output);
 	});	
 	
-	document.querySelectorAll('input[name="h_btnradio"]').forEach(radio => {					// h-Buttons registrieren
+	document.querySelectorAll('input[name="h_btnradio"]').forEach(radio => {				
 		radio.addEventListener('change', (event) => {
-			//console.log("Ausgewählter Wert:", event.target.value);
 			max_hours = event.target.value;
 			
-			document.querySelectorAll('input.summand').forEach(input => {		parseTC(input);			});
+			document.querySelectorAll('input.addend').forEach(input => {		parseTC(input);			});
 			document.querySelectorAll('div.input-group').forEach(inputrow => {	calculate(inputrow);	});			
 		});
 	});	
 	
-	document.querySelector('input.summand').focus();
+	document.querySelector('input.addend').focus();
 }
 
 
@@ -47,16 +46,15 @@ function init_TC_input(Input_Object) {
 	
 	Input_Object.value = "00:00:00:00";
 	
-	// auf Tastendruck im Input-Feld lauschen
 	Input_Object.addEventListener('keydown', (event) => {
 
 		if (event.key === '+') {
-			event.preventDefault(); // Verhindert, dass das "+" tatsächlich im Textfeld hineingeschrieben wird
+			event.preventDefault();
 			Input_Object.parentElement.querySelector('.operator').innerText = "+";
 			calculate(Input_Object.parentElement);
-			if(Input_Object.parentElement.querySelector('.summand') === Input_Object)
+			if(Input_Object.parentElement.querySelector('.addend') === Input_Object)
 			{
-				Input_Object.parentElement.querySelectorAll(':scope > .summand')[1].focus();	
+				Input_Object.parentElement.querySelectorAll(':scope > .addend')[1].focus();	
 			}
 		}
 
@@ -64,13 +62,13 @@ function init_TC_input(Input_Object) {
 			event.preventDefault(); 
 			Input_Object.parentElement.querySelector('.operator').innerText = "-";
 			calculate(Input_Object.parentElement);
-			if(Input_Object.parentElement.querySelector('.summand') === Input_Object)
+			if(Input_Object.parentElement.querySelector('.addend') === Input_Object)
 			{
-				Input_Object.parentElement.querySelectorAll(':scope > .summand')[1].focus();	
+				Input_Object.parentElement.querySelectorAll(':scope > .addend')[1].focus();	
 			}
 		}	
 
-		if (event.key === 'n' || event.key === 'N') {				// Feld nullen
+		if (event.key === 'n' || event.key === 'N') {				// set field to zero
 			event.preventDefault(); 
 			const CursorPos = Input_Object.selectionStart;
 			Input_Object.value = "00:00:00:00";
@@ -79,13 +77,13 @@ function init_TC_input(Input_Object) {
 			Input_Object.setSelectionRange(CursorPos, CursorPos);
 		}
 		
-		if (event.key === 'z' || event.key === 'Z') {				// neue Zeile
+		if (event.key === 'z' || event.key === 'Z') {				// add new line
 			event.preventDefault(); 
-			mehr_Zeilen();
+			add_line();
 			return true;
 		}
 
-		if (event.key === 'f' || event.key === 'F') {				// neue Zeile
+		if (event.key === 'f' || event.key === 'F') {				// change FPS value
 			event.preventDefault(); 
 			change_FPS();
 			return true;
@@ -93,10 +91,10 @@ function init_TC_input(Input_Object) {
 
 		if (event.key === 'ArrowUp') {
 			event.preventDefault(); 
-			const aktuellesInput = event.target; 
-			const geschwisterListe = aktuellesInput.parentElement.querySelectorAll(':scope > input.summand');
-			const index = Array.from(geschwisterListe).indexOf(aktuellesInput);
-			const prevZeile = Input_Object.closest(".zeile").previousElementSibling.querySelectorAll('.summand')[index];
+			const thisInput = event.target; 
+			const SiblingList = thisInput.parentElement.querySelectorAll(':scope > input.addend');
+			const index = Array.from(SiblingList).indexOf(thisInput);
+			const prevZeile = Input_Object.closest(".zeile").previousElementSibling.querySelectorAll('.addend')[index];
 			if(!prevZeile)
 				return;
 			prevZeile.focus();
@@ -105,11 +103,11 @@ function init_TC_input(Input_Object) {
 
 		if (event.key === 'ArrowDown') {
 			event.preventDefault(); 
-			const aktuellesInput = event.target; 
-			const geschwisterListe = aktuellesInput.parentElement.querySelectorAll(':scope > input.summand');
-			const index = Array.from(geschwisterListe).indexOf(aktuellesInput);			
+			const thisInput = event.target; 
+			const SiblingList = thisInput.parentElement.querySelectorAll(':scope > input.addend');
+			const index = Array.from(SiblingList).indexOf(thisInput);			
 			try {
-				const nextZeile = Input_Object.closest(".zeile").nextElementSibling.querySelectorAll('.summand')[index];			
+				const nextZeile = Input_Object.closest(".zeile").nextElementSibling.querySelectorAll('.addend')[index];			
 				nextZeile.focus();
 				nextZeile.setSelectionRange(0, 0);	
 			}
@@ -117,18 +115,18 @@ function init_TC_input(Input_Object) {
 		}	
 
 		if (event.key === 'ArrowRight') {
-			const aktuellesInput = event.target; 
-			const CursorPos = aktuellesInput.selectionStart == aktuellesInput.selectionEnd ? aktuellesInput.selectionStart : -1;
+			const thisInput = event.target; 
+			const CursorPos = thisInput.selectionStart == thisInput.selectionEnd ? thisInput.selectionStart : -1;
 			if(CursorPos != 11)
 				return;
-			const geschwisterListe = aktuellesInput.parentElement.querySelectorAll(':scope > input.summand');
-			const index = Array.from(geschwisterListe).indexOf(aktuellesInput);
+			const SiblingList = thisInput.parentElement.querySelectorAll(':scope > input.addend');
+			const index = Array.from(SiblingList).indexOf(thisInput);
 			if(index != 0)
 				return;			
 	
 			event.preventDefault(); 
 
-			const nextFeld = geschwisterListe[1];
+			const nextFeld = SiblingList[1];
 			if(!nextFeld)
 				return;
 			nextFeld.focus();
@@ -136,32 +134,30 @@ function init_TC_input(Input_Object) {
 		}	
 
 		if (event.key === 'ArrowLeft') {
-			const aktuellesInput = event.target; 
-			const CursorPos = aktuellesInput.selectionStart == aktuellesInput.selectionEnd ? aktuellesInput.selectionStart : -1;
+			const thisInput = event.target; 
+			const CursorPos = thisInput.selectionStart == thisInput.selectionEnd ? thisInput.selectionStart : -1;
 			if(CursorPos != 0)
 				return;
-			const geschwisterListe = aktuellesInput.parentElement.querySelectorAll(':scope > input.summand');
-			const index = Array.from(geschwisterListe).indexOf(aktuellesInput);
+			const SiblingList = thisInput.parentElement.querySelectorAll(':scope > input.addend');
+			const index = Array.from(SiblingList).indexOf(thisInput);
 			if(index != 1)
 				return;			
 			event.preventDefault(); 
 
-			const prevFeld = geschwisterListe[0];
+			const prevFeld = SiblingList[0];
 			if(!prevFeld)
 				return;
 			prevFeld.focus();
 			prevFeld.setSelectionRange(11, 11);	
 		}			
 		
-		//console.log(event.key);		
 	});	
 	
 
 	Input_Object.addEventListener("wheel", (event) => {
-	  //event.preventDefault();
-	  if(event.target.classList.contains("is-invalid"))
+	  if(event.target.classList.contains("is-invalid"))			// no action on invalid timecodes
 		return;
-	  Mausrad(event.target, event.deltaY);
+	  handle_wheel_movement(event.target, event.deltaY);
 	}, { passive: false });
 
 	
@@ -170,18 +166,15 @@ function init_TC_input(Input_Object) {
 		calculate(event.target.closest("div.input-group"));
 	});
 	
-	// Start Drag
-	Input_Object.addEventListener("dragstart", (e) => {
+	Input_Object.addEventListener("dragstart", (e) => {				// allow drag&drop
 	  e.dataTransfer.setData("text/plain", Input_Object.value);
 	});
 
-	// Drop erlauben
-	Input_Object.addEventListener("dragover", (e) => {
+	Input_Object.addEventListener("dragover", (e) => {				// allow drop
 	  e.preventDefault();
 	});
 
-	// Wert übernehmen
-	Input_Object.addEventListener("drop", (e) => {
+	Input_Object.addEventListener("drop", (e) => {					// receive value on drop
 		e.preventDefault();
 		const data = e.dataTransfer.getData("text/plain");
 		Input_Object.value = data;
@@ -196,7 +189,6 @@ function init_TC_output(Output_Object) {
 	
 	Output_Object.value = "00:00:00:00";
 
-	// Start Drag
 	Output_Object.addEventListener("dragstart", (e) => {
 	  e.dataTransfer.setData("text/plain", Output_Object.value);
 	});
@@ -208,71 +200,69 @@ function init_TC_output(Output_Object) {
 
 
 function calculate(InputGroup) {
-	const Ergebnisfeld = InputGroup.querySelector('.summe');
-	const Operator = InputGroup.querySelector('.operator').innerText;
-	let ErgebnisFrames = 0;
+	const resultField = InputGroup.querySelector('.sum');
+	const operator = InputGroup.querySelector('.operator').innerText;
+	let resultInframes = 0;
 	
-	// Gibt es ungültige Felder?
-	if(InputGroup.querySelector('.is-invalid') !== null)
+	if(InputGroup.querySelector('.is-invalid') !== null)					// abort calculation if there are invalid inputs
 	{
-		Ergebnisfeld.value = "";
+		resultField.value = "";
 		return false;
 	}
 	
-	const alleDirektenKinder = InputGroup.querySelectorAll(':scope > .summand');
-	const Argument1 = alleDirektenKinder[0];
-	const Argument2 = alleDirektenKinder[1];
+	const allDirectChildren = InputGroup.querySelectorAll(':scope > .addend');
+	const Argument1 = allDirectChildren[0];
+	const Argument2 = allDirectChildren[1];
 
-	if(Operator == "-")
-		ErgebnisFrames = TC_to_Frames(Argument1.value) - TC_to_Frames(Argument2.value);
+	if(operator == "-")
+		resultInframes = TC_to_frames(Argument1.value) - TC_to_frames(Argument2.value);
 	else
-		ErgebnisFrames = TC_to_Frames(Argument1.value) + TC_to_Frames(Argument2.value);	
+		resultInframes = TC_to_frames(Argument1.value) + TC_to_frames(Argument2.value);	
 		
-	if(max_hours == 24 && ErgebnisFrames >= TC_to_Frames("24:00:00:00"))
+	if(max_hours == 24 && resultInframes >= TC_to_frames("24:00:00:00"))
 	{
 		document.getElementById("h_btngroup").style.display = "";
-		ErgebnisFrames = ErgebnisFrames % TC_to_Frames("24:00:00:00");
+		resultInframes = resultInframes % TC_to_frames("24:00:00:00");
 	}
 
-	if(max_hours == 24 && ErgebnisFrames < 0)
+	if(max_hours == 24 && resultInframes < 0)
 	{
 		document.getElementById("h_btngroup").style.display = "";
-		ErgebnisFrames = TC_to_Frames("24:00:00:00") - (Math.abs(ErgebnisFrames) % TC_to_Frames("24:00:00:00"));		
+		resultInframes = TC_to_frames("24:00:00:00") - (Math.abs(resultInframes) % TC_to_frames("24:00:00:00"));		
 	}
 	
-
-	Ergebnisfeld.value = Frames_to_TC(ErgebnisFrames);
+	resultField.value = frames_to_TC(resultInframes);
 	
 	return true;
 }
 
 
-function TC_to_Frames(TC) {
-	const Stunden = Number(TC.trim().substring(0, 2));
-	const Minuten = Number(TC.trim().substring(3, 5));
-	const Sekunden = Number(TC.trim().substring(6, 8));
-	const Frames = Number(TC.trim().substring(9, 11));
+function TC_to_frames(TC) {
+	const hours = Number(TC.trim().substring(0, 2));
+	const minutes = Number(TC.trim().substring(3, 5));
+	const seconds = Number(TC.trim().substring(6, 8));
+	const frames = Number(TC.trim().substring(9, 11));
 	
-	return FramesPerSecond * Stunden * 3600 + FramesPerSecond * Minuten * 60 + FramesPerSecond * Sekunden + Frames;
+	return framesPerSecond * hours * 3600 + framesPerSecond * minutes * 60 + framesPerSecond * seconds + frames;
 }
 
 
-function Frames_to_TC(FramesGes) {
+function frames_to_TC(framesGes) {
 	let Vorzeichen = "";
-	if(FramesGes < 0)
+	if(framesGes < 0)
 	{
-		FramesGes = Math.abs(FramesGes);
+		framesGes = Math.abs(framesGes);
 		Vorzeichen = "-";
 	}
-	const Frames = FramesGes % FramesPerSecond;
-	let Rest = Math.trunc(FramesGes / FramesPerSecond);
-	const Sekunden = Rest % 60;
+	const frames = framesGes % framesPerSecond;
+	let Rest = Math.trunc(framesGes / framesPerSecond);
+	const seconds = Rest % 60;
 	Rest = Math.trunc(Rest / 60);
-	const Minuten = Rest % 60;
-	const Stunden = Math.trunc(Rest / 60);	
+	const minutes = Rest % 60;
+	const hours = Math.trunc(Rest / 60);	
 	
 	
-	return Vorzeichen + Stunden.toString().padStart(2, '0') + ":" + Minuten.toString().padStart(2, '0') + ":" + Sekunden.toString().padStart(2, '0') + ":" + Frames.toString().padStart(2, '0');
+	return Vorzeichen + hours.toString().padStart(2, '0') + ":" + minutes.toString().padStart(2, '0') + ":" + seconds.toString().padStart(2, '0') + ":" + frames.toString().padStart(2, '0');
 }
 
 
@@ -286,7 +276,7 @@ function parseTC(Input) {
 	
 	if(max_hours == 24)
 	{
-		switch(FramesPerSecond) {
+		switch(framesPerSecond) {
 		case 24: gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-3]))$/;
 			break;
 		case 25: gueltiger_TC = /^(([0-1]\d)|(2[0-3])):[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-4]))$/;
@@ -299,7 +289,7 @@ function parseTC(Input) {
 			break;				
 		}	
 	} else {
-		switch(FramesPerSecond) {
+		switch(framesPerSecond) {
 		case 24: gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-3]))$/;
 			break;
 		case 25: gueltiger_TC = /^\d{2}:[0-5]\d:[0-5]\d:(([0-1]\d)|(2[0-4]))$/;
@@ -314,11 +304,11 @@ function parseTC(Input) {
 	}
 
 
-	const nurZahlen = Input.value.trim().replace(/\D/g, "");
+	const onlyNumbers = Input.value.trim().replace(/\D/g, "");
 	
-	if(nurZahlen.length == 8)
+	if(onlyNumbers.length == 8)
 	{
-		const mitDoppelpunkt = eight2TC(nurZahlen);
+		const mitDoppelpunkt = eight2TC(onlyNumbers);
 		if(gueltiger_TC.test(mitDoppelpunkt))
 		{
 			Input.value = mitDoppelpunkt;
@@ -330,28 +320,27 @@ function parseTC(Input) {
 	
 
 
-	// Fall +_4:44:44:44 : Ziffer am Anfang eingefügt  ---> überschreiben
+	// case +_4:44:44:44  insert at beginning or in the middle  ---> overwrite
 	
 	const Regex03 = /^\d{3}:\d{2}:\d{2}:\d{2}$/;	
 	if(Regex03.test(Input.value.trim()) && CursorPos == 1)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 1) + nurZahlen.substring(2, 9));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 1) + onlyNumbers.substring(2, 9));	
 			Input.setSelectionRange(1, 1);			
 			return parseTC(Input);
 	}	
 	
-	// weitere Einfüge-Fälle
 		
 	if(Regex03.test(Input.value.trim()) && CursorPos == 2)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 2) + nurZahlen.substring(3, 9));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 2) + onlyNumbers.substring(3, 9));	
 			Input.setSelectionRange(3, 3);			
 			return parseTC(Input);
 	}	
 	
 	if(Regex03.test(Input.value.trim()) && CursorPos == 3)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 3) + nurZahlen.substring(4, 9));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 3) + onlyNumbers.substring(4, 9));	
 			Input.setSelectionRange(4, 4);			
 			return parseTC(Input);
 	}		
@@ -359,21 +348,21 @@ function parseTC(Input) {
 	const Regex04 = /^\d{2}:\d{3}:\d{2}:\d{2}$/;	
 	if(Regex04.test(Input.value.trim()) && CursorPos == 4)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 3) + nurZahlen.substring(4, 9));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 3) + onlyNumbers.substring(4, 9));	
 			Input.setSelectionRange(4, 4);			
 			return parseTC(Input);
 	}		
 		
 	if(Regex04.test(Input.value.trim()) && CursorPos == 5)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 4) + nurZahlen.substring(5, 9));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 4) + onlyNumbers.substring(5, 9));	
 			Input.setSelectionRange(6, 6);			
 			return parseTC(Input);
 	}	
 
 	if(Regex04.test(Input.value.trim()) && CursorPos == 6)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 5) + nurZahlen.substring(6, 9));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 5) + onlyNumbers.substring(6, 9));	
 			Input.setSelectionRange(7, 7);			
 			return parseTC(Input);
 	}		
@@ -381,21 +370,21 @@ function parseTC(Input) {
 	const Regex05 = /^\d{2}:\d{2}:\d{3}:\d{2}$/;	
 	if(Regex05.test(Input.value.trim()) && CursorPos == 7)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 5) + nurZahlen.substring(6, 9));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 5) + onlyNumbers.substring(6, 9));	
 			Input.setSelectionRange(7, 7);			
 			return parseTC(Input);
 	}		
 		
 	if(Regex05.test(Input.value.trim()) && CursorPos == 8)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 6) + nurZahlen.substring(7, 9));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 6) + onlyNumbers.substring(7, 9));	
 			Input.setSelectionRange(9, 9);			
 			return parseTC(Input);
 	}	
 			
 	if(Regex05.test(Input.value.trim()) && CursorPos == 9)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 7) + nurZahlen.substring(8, 9));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 7) + onlyNumbers.substring(8, 9));	
 			Input.setSelectionRange(10, 10);			
 			return parseTC(Input);
 	}		
@@ -403,24 +392,24 @@ function parseTC(Input) {
 	const Regex06 = /^\d{2}:\d{2}:\d{2}:\d{3}$/;	
 	if(Regex06.test(Input.value.trim()) && CursorPos == 10)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 7) + nurZahlen.substring(8, 9));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 7) + onlyNumbers.substring(8, 9));	
 			Input.setSelectionRange(10, 10);			
 			return parseTC(Input);
 	}		
 		
 	if(Regex06.test(Input.value.trim()) && CursorPos == 11)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 8) + nurZahlen.substring(9, 9));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 8) + onlyNumbers.substring(9, 9));	
 			Input.setSelectionRange(11, 11);			
 			return parseTC(Input);
 	}		
 
 
-	// Sonderfall: 44:44:44:44+ Ziffer am Ende eingegeben? ---> alle Ziffern eins nach links verschieben.
+	// case: 44:44:44:44+   insert at end of line    ---> move all digits to the left (like in a calculator)
 	
 	if(Regex06.test(Input.value.trim()) && CursorPos == 12)
 	{
-			Input.value = eight2TC(nurZahlen.substring(1, 9));					
+			Input.value = eight2TC(onlyNumbers.substring(1, 9));					
 			return parseTC(Input);
 	}
 
@@ -429,21 +418,19 @@ function parseTC(Input) {
 
 
 
-	// Fall _4:44:44:44 : Ziffer am Anfang gelöscht ---> nullen
+	// case:  _4:44:44:44 :  deleted a digit at the beginning or in the middle  --->  replace by zero
 	
 	const Regex07 = /^\d{1}:\d{2}:\d{2}:\d{2}$/;	
 	if(Regex07.test(Input.value.trim()) && CursorPos == 0)
 	{
-			Input.value = eight2TC("0" + nurZahlen);	
+			Input.value = eight2TC("0" + onlyNumbers);	
 			Input.setSelectionRange(0, 0);			
 			return parseTC(Input);
 	}	
-	
-	// weitere Lösch-Fälle
 		
 	if(Regex07.test(Input.value.trim()) && CursorPos == 1)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 1) + "0" + nurZahlen.substring(1, 7));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 1) + "0" + onlyNumbers.substring(1, 7));	
 			Input.setSelectionRange(1, 1);			
 			return parseTC(Input);
 	}	
@@ -451,14 +438,14 @@ function parseTC(Input) {
 	const Regex08 = /^\d{2}:\d{1}:\d{2}:\d{2}$/;	
 	if(Regex08.test(Input.value.trim()) && CursorPos == 3)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 2) + "0" + nurZahlen.substring(2, 7));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 2) + "0" + onlyNumbers.substring(2, 7));	
 			Input.setSelectionRange(3, 3);			
 			return parseTC(Input);
 	}		
 		
 	if(Regex08.test(Input.value.trim()) && CursorPos == 4)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 3) + "0" + nurZahlen.substring(3, 7));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 3) + "0" + onlyNumbers.substring(3, 7));	
 			Input.setSelectionRange(4, 4);			
 			return parseTC(Input);
 	}	
@@ -466,14 +453,14 @@ function parseTC(Input) {
 	const Regex09 = /^\d{2}:\d{2}:\d{1}:\d{2}$/;	
 	if(Regex09.test(Input.value.trim()) && CursorPos == 6)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 4) + "0" + nurZahlen.substring(4, 7));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 4) + "0" + onlyNumbers.substring(4, 7));	
 			Input.setSelectionRange(6, 6);			
 			return parseTC(Input);
 	}		
 		
 	if(Regex09.test(Input.value.trim()) && CursorPos == 7)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 5) + "0" + nurZahlen.substring(5, 7));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 5) + "0" + onlyNumbers.substring(5, 7));	
 			Input.setSelectionRange(7, 7);			
 			return parseTC(Input);
 	}	
@@ -481,44 +468,41 @@ function parseTC(Input) {
 	const Regex10 = /^\d{2}:\d{2}:\d{2}:\d{1}$/;	
 	if(Regex10.test(Input.value.trim()) && CursorPos == 9)
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 6) + "0" + nurZahlen.substring(6, 7));	
+			Input.value = eight2TC(onlyNumbers.substring(0, 6) + "0" + onlyNumbers.substring(6, 7));	
 			Input.setSelectionRange(9, 9);			
 			return parseTC(Input);
 	}		
 	
 
-	// Sonderfall: 44:44:44:4_ Ziffer am Ende gelöscht ---> alle Ziffern eins nach rechts verschieben.
+	// ase:   44:44:44:4_   deleted a digit at the end --->  move all digits to the right
 
 	if(Regex10.test(Input.value.trim()) && CursorPos == 10)
 	{
-			Input.value = eight2TC("0" + nurZahlen);		
+			Input.value = eight2TC("0" + onlyNumbers);		
 			return parseTC(Input);
 	}
 	
 	
-
 	
-	// Sonderfall: TC am Anfang reinkopiert
+	// case: inserted a complete TC
+	
 	const Regex11 = /^\d{2}:\d{2}:\d{2}:\d{4}:\d{2}:\d{2}:\d{2}$/;
 	const Regex12 = /^\d{10}:\d{2}:\d{2}:\d{2}$/;
 	if((Regex11.test(Input.value.trim()) && CursorPos == 11) || (Regex12.test(Input.value.trim()) && CursorPos == 8))
 	{
-			Input.value = eight2TC(nurZahlen.substring(0, 8));		
+			Input.value = eight2TC(onlyNumbers.substring(0, 8));		
 			return parseTC(Input);
 	}	
 	
-	
-	// Sonderfall: TC am Ende reinkopiert
+
 	const Regex13 = /^\d{2}:\d{2}:\d{2}:\d{10}$/;
 	if((Regex11.test(Input.value.trim()) && CursorPos == 22) || (Regex13.test(Input.value.trim()) && CursorPos == 19))
 	{
-			Input.value = eight2TC(nurZahlen.substring(8, 16));		
+			Input.value = eight2TC(onlyNumbers.substring(8, 16));		
 			return parseTC(Input);
 	}
 
 
-
-	// Sonderfall: TC irgendwo reinkopiert      // 12:34:43:21
 	const Regex14 = /(\d{2}:\d{2}:\d{2}:\d{2})/;
 	const treffer = Input.value.trim().match(Regex14)?.[0] ?? 0;
 	
@@ -534,38 +518,39 @@ function parseTC(Input) {
 }
 
 
-function Mausrad(Input, Delta) {
-	let Ergebnis = 0;
+
+function handle_wheel_movement(Input, Delta) {
+	let resultingFrames = 0;
 	
-	if(Delta > 0)			// verringern
+	if(Delta > 0)			// decrease
 	{
-		Ergebnis = TC_to_Frames(Input.value) - 1;
-		if(Ergebnis < 0)
+		resultingFrames = TC_to_frames(Input.value) - 1;
+		if(resultingFrames < 0)
 		{
 			if(max_hours == 24)
 			{
 				document.getElementById("h_btngroup").style.display = "";
-				Ergebnis = TC_to_Frames("24:00:00:00") - 1;
+				resultingFrames = TC_to_frames("24:00:00:00") - 1;
 			}
 			else
-				Ergebnis = 0;
+				resultingFrames = 0;
 		}
-		Input.value = Frames_to_TC(Ergebnis);	
+		Input.value = frames_to_TC(resultingFrames);	
 	}
 	
-	if(Delta < 0)			// erhöhen
+	if(Delta < 0)			// increase
 	{
-		Ergebnis = TC_to_Frames(Input.value) + 1;
+		resultingFrames = TC_to_frames(Input.value) + 1;
 			
-		if(Ergebnis >= TC_to_Frames("24:00:00:00") && max_hours == 24)
+		if(resultingFrames >= TC_to_frames("24:00:00:00") && max_hours == 24)
 		{
 			document.getElementById("h_btngroup").style.display = "";
-			Ergebnis = 0;
+			resultingFrames = 0;
 		}
 
 	}	
 	
-	Input.value = Frames_to_TC(Ergebnis);	
+	Input.value = frames_to_TC(resultingFrames);	
 	
 	calculate(Input.parentElement);
 }
@@ -587,60 +572,56 @@ function eight2TC(Input)
 
 
 
-function mehr_Zeilen() {
-	const zeilen = document.querySelectorAll('div.zeile');
-	const letzteZeile = zeilen[zeilen.length - 1];
-	const letztesErgebnis = letzteZeile.querySelector(".summe").value;
+function add_line() {
+	const allLines = document.querySelectorAll('div.zeile');
+	const lastLine = allLines[allLines.length - 1];
+	const lastResult = lastLine.querySelector(".sum").value;
 
-	if (!letzteZeile)
+	if (!lastLine)
 		return false;
 		
-	const geklonteZeile = letzteZeile.cloneNode(true);
-	const elternElement = letzteZeile.parentElement;
-	elternElement.appendChild(geklonteZeile);
+	const clonedLine = lastLine.cloneNode(true);
+	const parentElement = lastLine.parentElement;
+	parentElement.appendChild(clonedLine);
 
 	
-	const alleZeilen = document.querySelectorAll('div.zeile');
-	const neueletzteZeile = alleZeilen[alleZeilen.length - 1];
+	const allLinesWithAddedLine = document.querySelectorAll('div.zeile');
+	const newLastLine = allLinesWithAddedLine[allLinesWithAddedLine.length - 1];
 	
-	neueletzteZeile.querySelectorAll('input.summand').forEach(input => {
+	newLastLine.querySelectorAll('input.addend').forEach(input => {
 		init_TC_input(input);
 	});
 	
-	neueletzteZeile.querySelectorAll('input.summe').forEach(output => {
+	newLastLine.querySelectorAll('input.sum').forEach(output => {
 		init_TC_output(output);
 	});	
 	
 
-	if(letztesErgebnis.length == 11 && letztesErgebnis != "00:00:00:00")
+	if(lastResult.length == 11 && lastResult != "00:00:00:00")
 	{
-		neueletzteZeile.querySelector(".summand").value = letztesErgebnis;
-		flashField(letzteZeile.querySelector(".summe"),10);
-		flashField(neueletzteZeile.querySelector('input.summand'),200);
+		newLastLine.querySelector(".addend").value = lastResult;
+		flashField(lastLine.querySelector(".sum"),10);
+		flashField(newLastLine.querySelector('input.addend'),200);
 	}
 	else	
-		neueletzteZeile.querySelector(".summand").value = "00:00:00:00";
+		newLastLine.querySelector(".addend").value = "00:00:00:00";
 		
-	neueletzteZeile.style.backgroundColor = document.querySelectorAll('div.zeile').length % 2 == 0 ? "#f6f6f6" : "#ffffff";		// Bänderung
+	newLastLine.style.backgroundColor = document.querySelectorAll('div.zeile').length % 2 == 0 ? "#f6f6f6" : "#ffffff";		// Bänderung
 
-	neueletzteZeile.querySelector('input.summand').focus();	
-	parseTC(neueletzteZeile.querySelector('input.summand'));
-	parseTC(neueletzteZeile.querySelectorAll('input.summand')[1]);
-	calculate(neueletzteZeile.querySelector("div.input-group"));
+	newLastLine.querySelector('input.addend').focus();	
+	parseTC(newLastLine.querySelector('input.addend'));
+	parseTC(newLastLine.querySelectorAll('input.addend')[1]);
+	calculate(newLastLine.querySelector("div.input-group"));
 }
 
 
-function flashField(inputField, delay) {
-  //const inputField = document.getElementById(elementId);
+function flashField(inputField, delay) {						// give a hint that the last result has been copied
   
   if (inputField) {
-    // Klasse hinzufügen, um die Animation zu starten
     setTimeout(() => {
        inputField.classList.add('input-flash-blue');
     }, 10 + delay);	
 
-    
-    // Klasse später wieder entfernen
     setTimeout(() => {
       inputField.classList.remove('input-flash-blue');
     }, 1600 + delay);
@@ -648,7 +629,7 @@ function flashField(inputField, delay) {
 }
 
 
-function toggle_Anleitung() {
+function toggleManual() {
 
 	if(document.getElementById('Anleitung').classList.contains('hidden'))
 	{
@@ -665,16 +646,16 @@ function toggle_Anleitung() {
 
 function change_FPS() {
 
-	let index = FPS_options.indexOf(FramesPerSecond);
+	let index = FPS_options.indexOf(framesPerSecond);
 	
 	if(index == FPS_options.length - 1)
-		FramesPerSecond = FPS_options[0];
+		framesPerSecond = FPS_options[0];
 	else
-		FramesPerSecond = FPS_options[index + 1];
+		framesPerSecond = FPS_options[index + 1];
 	
-	document.getElementById("FPS_btn").innerText = FramesPerSecond + " FPS";
+	document.getElementById("FPS_btn").innerText = framesPerSecond + " FPS";
 	
-	document.querySelectorAll('input.summand').forEach(input => {		parseTC(input);			});				// re-evaluate inputs
+	document.querySelectorAll('input.addend').forEach(input => {		parseTC(input);			});				// re-evaluate inputs
 	document.querySelectorAll('div.input-group').forEach(inputrow => {	calculate(inputrow);	});				// re-calculate, because result may be differen now
 	return true;
 }
@@ -767,18 +748,18 @@ function change_FPS() {
 
 		<div class="col-md-6 text-end mt-2">			
 
-			<div class="btn-group" role="group" aria-label="24 Stunden oder 99 Stunden" id="h_btngroup" style="display: none;">
+			<div class="btn-group" role="group" aria-label="24 hours oder 99 hours" id="h_btngroup" style="display: none;">
 			  <input type="radio" class="btn-check" name="h_btnradio" value="24"  id="h_btnradio1" autocomplete="off" checked="">
-			  <label class="btn btn-outline-primary" for="h_btnradio1" title="Umbruch bei 24 Stunden (für Real-Time-Codes)">24 h</label>
+			  <label class="btn btn-outline-primary" for="h_btnradio1" title="Umbruch bei 24 hours (für Real-Time-Codes)">24 h</label>
 
 			  <input type="radio" class="btn-check" name="h_btnradio" value="99" id="h_btnradio2" autocomplete="off">
 			  <label class="btn btn-outline-primary" for="h_btnradio2" title="kein 24-h-Umbruch">99 h</label>
 			</div>			
 		
 		
-			<button type="button" class="btn btn-outline-secondary" id="Anleitung_btn" onClick="toggle_Anleitung();">Anleitung</button>		
+			<button type="button" class="btn btn-outline-secondary" id="Anleitung_btn" onClick="toggleManual();">Anleitung</button>		
 	
-			<button type="button" class="btn btn-outline-secondary" onClick="document.querySelectorAll('.summand, .summe').forEach(input => {input.value='00:00:00:00';});	document.querySelectorAll('input.summand').forEach(input => {parseTC(input);});">alles nullen</button>					
+			<button type="button" class="btn btn-outline-secondary" onClick="document.querySelectorAll('.addend, .sum').forEach(input => {input.value='00:00:00:00';});	document.querySelectorAll('input.addend').forEach(input => {parseTC(input);});">alles nullen</button>					
 
 			
 			<button type="button" class="btn btn-outline-secondary" id="FPS_btn" onClick="change_FPS();" title="Framerate ändern">25 FPS</button>				
@@ -796,7 +777,7 @@ function change_FPS() {
  		<div class="row border rounded mt-5 p-4 hidden" id="Anleitung">
 		
 			  <h5>Tasten:</h5>
-			  <ul class="ms-5">
+			  <ul class="ms-5 pe-5">
 				<li><span class="badge text-bg-secondary">n</span> &ndash; aktuelles Feld nullen</li>
 				<li><span class="badge text-bg-secondary">z</span> &ndash; neue Zeile</li>
 				<li><span class="badge text-bg-secondary">f</span> &ndash; Framerate ändern</li>
@@ -805,21 +786,21 @@ function change_FPS() {
 			  </ul>
 		  
 			  <h5 class="mt-2">Maus:</h5>
-			  <ul class="ms-5">
-				<li><span class="badge text-bg-secondary">Drag&amp;Drop</span> &ndash; in ein beliebiges Ergebnisfeld klicken und in ein begliebiges Eingabefeld ziehen</li>
+			  <ul class="ms-5 pe-5">
+				<li><span class="badge text-bg-secondary">Drag&amp;Drop</span> &ndash; in ein beliebiges Ergebnis klicken und in ein begliebiges Eingabefeld ziehen</li>
 				<li><span class="badge text-bg-secondary">Mausrad</span> &ndash; erhöht/verringert den Wert im aktuellen Eingabefeld um 1 Frame</li>			
 			  </ul>		
 			  
 			  <h5 class="mt-2">Schaltflächen:</h5>
-			  <ul class="ms-5">
+			  <ul class="ms-5 pe-5">
 				<li><span class="badge text-bg-secondary">+</span> / <span class="badge text-bg-secondary">-</span> &ndash; schaltet den Operator um</li>
 				<li><span class="badge text-bg-secondary">=</span> &ndash; kopiert das dahinterstehende Ergebnis in die Zwischenablage</li>	
 				<li><span class="badge text-bg-secondary">xx FPS</span> &ndash; Umschaltung zwischen den Frameraten</li>		
-				<li><span class="badge text-bg-secondary">24/99 h</span> &ndash; Schaltet den Umbruch bei 24 Stunden an/aus (f&uuml;r Real-Time-Codes). (wird nur angezeigt, wenn relevant)</li>							
+				<li><span class="badge text-bg-secondary">24/99 h</span> &ndash; Schaltet den Umbruch bei 24 hours an/aus (f&uuml;r Real-Time-Codes). (wird nur angezeigt, wenn relevant)</li>							
 			  </ul>				  
 
 			  <h5 class="mt-2">Cursor:</h5>
-			  <ul class="ms-5">
+			  <ul class="ms-5 pe-5">
 					<li>Steht der Cursor vor einer Ziffer, wird diese beim Tippen einfach überschrieben.</li>			  
 					<li>Steht der Cursor ganz rechts in einem Eingabefeld, rücken vorhandene Ziffern bei weiteren Eingaben einfach nach links durch (wie bei einem Taschenrechner).</li>
 			  </ul>		
@@ -834,8 +815,8 @@ function change_FPS() {
 
 			<div class="input-group input-group-lg flex-wrap">
 
-			  <!-- Summand 1 -->
-			  <input type="text" class="form-control tcbig text-end summand" inputmode="numeric">
+			  <!-- addend 1 -->
+			  <input type="text" class="form-control tcbig text-end addend" inputmode="numeric">
 
 			  <!-- Button 1 -->
 			  <div class="w-100 d-block d-lg-none"></div>
@@ -843,18 +824,18 @@ function change_FPS() {
 					  title="Operator umschalten"
 					  onClick="toggle_Operator(this);">+</button>
 
-			  <!-- Summand 2 -->
-			  <input type="text" class="form-control tcbig text-end summand" inputmode="numeric">
+			  <!-- addend 2 -->
+			  <input type="text" class="form-control tcbig text-end addend" inputmode="numeric">
 
 			  <!-- Button 2 -->
 			  <div class="w-100 d-block d-lg-none"></div>
 			  <button type="button" class="btn btn-outline-secondary tcbig"
-					  title="Ergebnis in die Zwischenablage kopieren"
+					  title="resultingFrames in die Zwischenablage kopieren"
 					  onClick="navigator.clipboard.writeText(this.nextElementSibling.value);">=</button>
 
-			  <!-- Ergebnis -->
-			  <input type="text" class="form-control tcbig text-end summe"
-					 title="Ergebnisfeld (auf das = davor klicken, um Ergebnis zu kopieren)"
+			  <!-- resultingFrames -->
+			  <input type="text" class="form-control tcbig text-end sum"
+					 title="resultField (auf das = davor klicken, um resultingFrames zu kopieren)"
 					 readonly placeholder="--:--:--:--">
 
 			</div>
@@ -869,7 +850,7 @@ function change_FPS() {
 	
 	  <div class="form-group col-md-12 p-4 text-center">
 
-			<button type="button" class="btn btn-outline-secondary" title="neue Zeile anfügen und Ergebnis aus der letzten Zeile übernehmen" onClick="mehr_Zeilen();">neue Zeile</button>
+			<button type="button" class="btn btn-outline-secondary" title="neue Zeile anfügen und resultingFrames aus der letzten Zeile übernehmen" onClick="add_line();">neue Zeile</button>
 
 	  </div>		
 	</div>	
