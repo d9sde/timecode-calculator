@@ -1,0 +1,65 @@
+/*
+		TimeCode Calculator
+		by Danny Schreiter
+		contact: www.d9s.de
+		06/2026
+
+		see https://d9sde.github.io/timecode-calculator/ for license and further details
+*/
+	
+
+body {
+	min-height: 100vh;
+	margin: 0;
+	display: flex;
+	flex-direction: column; 
+}
+
+footer {
+	height: 1em;
+	}
+
+main {
+	flex: 1;
+	}
+
+.tcbig {
+	font-family: Courier, Monaco, monospace;
+	font-weight: 900 ;
+	font-size: clamp(1.5rem, 2.3vw, 3rem) !important;
+}
+
+.form-control.is-invalid {
+	background-image: none; !important;
+	padding-right: 1rem;  !important;
+	color: red;
+}
+
+div.even_line {										/* banding of additional lines  */
+	background-color: #f6f6f6;
+}
+
+@keyframes flash-blue {								/* animation for auto-copy former result into new line's first addend  */
+  0% {
+	background-color: #aaccff;
+  }
+  100% {
+	background-color: #ffffff;
+  }
+}
+
+.input-flash-blue {
+	animation: flash-blue 1.5s ease-out;
+	}	
+
+.hidden {											/* for instruction manual */
+	display: none;
+	}
+  
+@media (max-width: 992px) 							/* for mobile optimization */
+{							
+	.tcbig {
+		font-size: clamp(2rem, 6vw, 4rem) !important;
+		border-radius: 0.375rem !important; 
+	}	  
+}

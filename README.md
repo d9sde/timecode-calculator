@@ -5,7 +5,7 @@ A highly capable, intuitive and lightweight browser-based timecode calculator op
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Platform: Web](https://img.shields.io/badge/Platform-Web-blue.svg)](https://github.com/d9sde/timecode-calculator)
 
-[![en02](https://github.com/user-attachments/assets/694348d2-d6cb-4415-a116-0f7f08ac47f2)](https://d9sde.github.io/timecode-calculator/)
+[![preview](https://d9sde.github.io/timecode-calculator/assets/preview-image.png)](https://d9sde.github.io/timecode-calculator/)
 
 ## 🚀 Features
 

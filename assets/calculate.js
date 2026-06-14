@@ -582,8 +582,11 @@ function add_line() {
 	else	
 		newLastLine.querySelector(".addend").value = "00:00:00:00";
 		
-	newLastLine.style.backgroundColor = document.querySelectorAll('div.zeile').length % 2 == 0 ? "#f6f6f6" : "#ffffff";		// banding
-
+	if(document.querySelectorAll('div.zeile').length % 2 == 0)		// banding
+		newLastLine.classList.add('even_line');
+	else
+		newLastLine.classList.remove('even_line');
+	
 	newLastLine.querySelector('input.addend').focus();	
 	parseTC(newLastLine.querySelector('input.addend'));
 	parseTC(newLastLine.querySelectorAll('input.addend')[1]);
@@ -591,7 +594,7 @@ function add_line() {
 }
 
 
-function flashField(inputField, delay) {						// give a hint that the last result has been copied
+function flashField(inputField, delay) {							// give a hint that the last result has been copied
   
   if (inputField) {
     setTimeout(() => {

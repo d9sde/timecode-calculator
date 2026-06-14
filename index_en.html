@@ -3,65 +3,20 @@
   <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="smart web-based calculator for video production timecodes">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta property="og:title" content="TimeCode Calculator">
+	<meta property="og:description" content="smart web-based calculator for video production timecodes">
+	<meta property="og:image" content="https://d9sde.github.io/timecode-calculator/assets/preview-image.png"> <!-- 2zu1, 1200x630 (min: 300x157) -->
+	<meta property="og:url" content="https://d9sde.github.io/timecode-calculator/">
+	<meta property="og:type" content="website">
+	
 	<title>TimeCode Calculator</title>
+
 	<link rel="alternate" hreflang="de" href="index_de.html" />
 	<link href="assets/bootstrap_5_3_8.min.css" rel="stylesheet" />
-
+	<link href="assets/style.css" rel="stylesheet" />
 	<script src="assets/calculate.js"></script>
-
-	<style>
-		
-		.tcbig {
-			font-family: Courier, Monaco, monospace;
-			font-weight: 900 ;
-			font-size: clamp(1.5rem, 2.3vw, 3rem) !important;
-		}
-		
-		.form-control.is-invalid {
-		  background-image: none; !important;
-		  padding-right: 1rem;  !important;
-		  color: red;
-		}
-
-		body {
-		  min-height: 100vh;
-		  margin: 0;
-		}
-
-		footer {  height: 1em;	}
-
-		body {
-		  display: flex;
-		  flex-direction: column;
-		}
-
-		main {  flex: 1;}
-		
-		@keyframes flash-blue {
-		  0% {
-			background-color: #aaccff; /* Bootstrap primäres Blau */
-			//box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
-		  }
-		  100% {
-			background-color: #ffffff; /* Standard Bootstrap Border-Farbe */
-			//box-shadow: 0 0 0 0 transparent;
-		  }
-		}
-
-		.input-flash-blue {  animation: flash-blue 1.5s ease-out; }	
-		
-		.hidden {  display: none; }	
-		  
-		@media (max-width: 992px) 
-		{							
-			.tcbig {
-				font-size: clamp(2rem, 6vw, 4rem) !important;
-				border-radius: 0.375rem !important; 
-			}	  
-		}
-
-	</style>
-
   </head>
   <body>
 
@@ -124,7 +79,6 @@
 					<li>If the cursor is positioned before a digit, typing will simply overwrite it.</li>			  
 					<li>If the cursor is at the very right of an input field, existing digits will shift to the left as you type (like on a calculator).</li>
 			  </ul>		
-
 		</div>
  
  
@@ -182,9 +136,8 @@
 	<!-- footer -->	
 
 	<footer class="py-3 my-4 border-top">
-	  <p class="text-center text-body-secondary"><a class="text-muted" href="https://www.d9s.de">www.d9s.de</a></p>
-	</footer>	 	
+	  <p class="text-center text-body-secondary"><a class="text-muted" href="https://www.d9s.de">www.d9s.de</a> | <a class="text-muted" href="https://github.com/d9sde/timecode-calculator">view project on github</a></p>
+	</footer> 	
 	
- 
   </body>
 </html>
