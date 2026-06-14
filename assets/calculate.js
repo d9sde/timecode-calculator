@@ -17,7 +17,28 @@ let max_hours = 24;								// default option for maximal hour value (24 is relev
 
 
 window.onload = function() {
+	
+	// check for dark color theme
+	const getPreferredTheme = () => {
+		// Prüft, ob das System auf Dark Mode eingestellt ist
+		if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+			return 'dark';
+		}
+		return 'light'; // Standardfall, wenn Windows auf "Hell" steht
+	}
 
+	const setTheme = theme => {
+		document.documentElement.setAttribute('data-bs-theme', theme);
+	}
+
+	setTheme(getPreferredTheme());
+
+    // react to live changes of color theme
+	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+		setTheme(getPreferredTheme());
+	});
+	
+	
 	document.querySelectorAll('input.addend').forEach(input => {		// init input fields
 		init_TC_input(input);
 	});
