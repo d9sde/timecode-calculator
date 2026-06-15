@@ -7,7 +7,7 @@
 	<meta name="twitter:card" content="summary_large_image">
 	<meta property="og:title" content="TimeCode-Rechner">
 	<meta property="og:description" content="smarter browserbasierter Rechner für Video-Timecodes">
-	<meta property="og:image" content="https://d9sde.github.io/timecode-calculator/assets/preview-image.png"> <!-- 2zu1, 1200x630 (min: 300x157) -->
+	<meta property="og:image" content="https://d9sde.github.io/timecode-calculator/assets/preview-image.png">
 	<meta property="og:url" content="https://d9sde.github.io/timecode-calculator/index_de.html">
 	<meta property="og:type" content="website">
 	
@@ -37,7 +37,7 @@
 
 				<button type="button" class="btn btn-outline-secondary" id="opManual_btn" onClick="toggleManual();" title="Anleitung anzeigen">Hilfe</button>		
 		
-				<button type="button" class="btn btn-outline-secondary" onClick="document.querySelectorAll('.addend, .sum').forEach(input => {input.value='00:00:00:00';});	document.querySelectorAll('input.addend').forEach(input => {parseTC(input);});">nullen</button>					
+				<button type="button" class="btn btn-outline-secondary" onClick="reset_all();">nullen</button>					
 
 				<button type="button" class="btn btn-outline-secondary" id="max_hours_btn" onClick="change_max_hours();" title="24-h-Umbruch an/aus">24 h</button>	
 				

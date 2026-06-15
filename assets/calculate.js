@@ -20,11 +20,9 @@ window.onload = function() {
 	
 	// check for dark color theme
 	const getPreferredTheme = () => {
-		// Prüft, ob das System auf Dark Mode eingestellt ist
-		if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+		if (window.matchMedia('(prefers-color-scheme: dark)').matches)
 			return 'dark';
-		}
-		return 'light'; // Standardfall, wenn Windows auf "Hell" steht
+		return 'light';
 	}
 
 	const setTheme = theme => {
@@ -47,7 +45,7 @@ window.onload = function() {
 		init_TC_output(output);
 	});	
 	
-	document.querySelector('input.addend').focus();						// focus an firts addend field
+	document.querySelector('input.addend').focus();						// focus an first addend field
 }
 
 
@@ -628,6 +626,11 @@ function flashField(inputField, delay) {							// give a hint that the last resu
   }
 }
 
+function reset_all() {
+	document.querySelectorAll('.addend, .sum').forEach(input => {input.value='00:00:00:00';});
+	document.querySelectorAll('input.addend').forEach(input => {parseTC(input);});
+	return true;
+}
 
 function toggleManual() {
 

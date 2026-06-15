@@ -7,7 +7,7 @@
 	<meta name="twitter:card" content="summary_large_image">
 	<meta property="og:title" content="TimeCode Calculator">
 	<meta property="og:description" content="smart web-based calculator for video production timecodes">
-	<meta property="og:image" content="https://d9sde.github.io/timecode-calculator/assets/preview-image.png"> <!-- 2zu1, 1200x630 (min: 300x157) -->
+	<meta property="og:image" content="https://d9sde.github.io/timecode-calculator/assets/preview-image.png">
 	<meta property="og:url" content="https://d9sde.github.io/timecode-calculator/index_en.html">
 	<meta property="og:type" content="website">
 	
@@ -37,7 +37,7 @@
 
 				<button type="button" class="btn btn-outline-secondary" id="opManual_btn" onClick="toggleManual();" title="instruction manual">help</button>		
 		
-				<button type="button" class="btn btn-outline-secondary" onClick="document.querySelectorAll('.addend, .sum').forEach(input => {input.value='00:00:00:00';});	document.querySelectorAll('input.addend').forEach(input => {parseTC(input);});">reset all</button>					
+				<button type="button" class="btn btn-outline-secondary" onClick="reset_all();">reset all</button>					
 
 				<button type="button" class="btn btn-outline-secondary" id="max_hours_btn" onClick="change_max_hours();" title="toggles the 24-hour wrap-around on or off (for real-time codes)">24 h</button>	
 				
