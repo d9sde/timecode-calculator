@@ -23,9 +23,17 @@ main {
 	flex: 1;
 	}
 
+@font-face {
+	font-family: 'Courier Prime';
+	src: url('../font/CourierPrime-Regular.ttf') format('truetype');	/* Please see ../font/OFL.txt for font license information. */
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+
 .tcbig {
-	font-family: Courier, Monaco, monospace;
-	font-weight: 900 ;
+	font-family: 'Courier Prime', Courier, monospace;
+	font-weight: 400 ;
 	font-size: clamp(1.5rem, 2.3vw, 3rem) !important;
 }
 
@@ -37,6 +45,12 @@ main {
 
 div.even_line {										/* banding of additional lines  */
 	background-color: #f6f6f6;
+}
+
+@media (prefers-color-scheme: dark) {
+	div.even_line {							/* banding of additional lines in dark theme  */
+		background-color: #293030;
+	}
 }
 
 @keyframes flash-blue {								/* animation for auto-copy former result into new line's first addend  */
