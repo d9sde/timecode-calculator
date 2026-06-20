@@ -600,11 +600,6 @@ function add_line() {
 	}
 	else	
 		newLastLine.querySelector(".addend").value = "00:00:00:00";
-		
-	if(document.querySelectorAll('div.zeile').length % 2 == 0)		// banding
-		newLastLine.classList.add('even_line');
-	else
-		newLastLine.classList.remove('even_line');
 	
 	newLastLine.querySelector('input.addend').focus();	
 	parseTC(newLastLine.querySelector('input.addend'));

@@ -43,12 +43,12 @@ main {
 	color: red;
 }
 
-div.even_line {										/* banding of additional lines  */
+div.zeile:nth-child(even) {
 	background-color: #f6f6f6;
 }
 
 @media (prefers-color-scheme: dark) {
-	div.even_line {							/* banding of additional lines in dark theme  */
+	div.zeile:nth-child(even) {							/* banding of additional lines in dark theme  */
 		background-color: #293030;
 	}
 }
