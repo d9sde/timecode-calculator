@@ -188,7 +188,6 @@ function init_TC_input(Input_Object) {
 		parseTC(Input_Object);
 		calculate(Input_Object.closest("div.input-group"));
 	});	
-	
 }
 
 
@@ -576,7 +575,7 @@ function add_line() {
 		
 	const clonedLine = lastLine.cloneNode(true);
 	const parentElement = lastLine.parentElement;
-	parentElement.insertBefore(clonedLine, lastLine);
+	lastLine.after(clonedLine);
 
 	
 	const allLinesWithAddedLine = document.querySelectorAll('div.zeile');

@@ -43,22 +43,22 @@ main {
 	color: red;
 }
 
-div.zeile:nth-child(even) {
+div.zeile:nth-child(even) {							/* banding of additional lines */
 	background-color: #f6f6f6;
 }
 
 @media (prefers-color-scheme: dark) {
-	div.zeile:nth-child(even) {							/* banding of additional lines in dark theme  */
+	div.zeile:nth-child(even) {						/* banding of additional lines in dark theme  */
 		background-color: #293030;
 	}
 }
 
 @keyframes flash-blue {								/* animation for auto-copy former result into new line's first addend  */
   0% {
-	background-color: #aaccff;
+	background-color: var(--bs-body-color);
   }
   100% {
-	background-color: #ffffff;
+	background-color: var(--bs-body-bg);
   }
 }
 
